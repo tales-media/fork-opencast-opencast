@@ -39,7 +39,6 @@ configuration:
 ```
 {
   "publishLive": "false",
-  "uploadedSearchPreview": "false",
   "publishToOaiPmh": "true",
   "comment": "false",
   "publishToMediaModule": "true"
@@ -108,7 +107,6 @@ __Example__
       "completion": "2018-08-08T08:46:57.3Z",
       "configuration": {
         "publishLive": "false",
-        "uploadedSearchPreview": "false",
         "publishToOaiPmh": "true",
         "comment": "false",
         "publishToMediaModule": "true"
@@ -152,7 +150,6 @@ __Example__
   "configuration": {
     "publishLive": "false",
     "workflowDefinitionId": "fast",
-    "uploadedSearchPreview": "false",
     "publishToOaiPmh": "true",
     "comment": "false",
     "publishToMediaModule": "true"
@@ -192,7 +189,6 @@ configuration:
 ```
 {
   "publishLive": "false",
-  "uploadedSearchPreview": "false",
   "publishToOaiPmh": "true",
   "comment": "false",
   "publishToMediaModule": "true"
@@ -322,8 +318,7 @@ __Example__
           "publishLive": "false",
           "publishToOaiPmh": "true",
           "comment": "false",
-          "publishToMediaModule": "true",
-          "uploadedSearchPreview": "false"
+          "publishToMediaModule": "true"
         },
         "unless": "",
         "if": "",
@@ -398,8 +393,7 @@ __Example__
         "publishLive": "false",
         "publishToOaiPmh": "true",
         "comment": "false",
-        "publishToMediaModule": "true",
-        "uploadedSearchPreview": "false"
+        "publishToMediaModule": "true"
       },
       "unless": "",
       "if": "",

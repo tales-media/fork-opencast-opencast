@@ -38,15 +38,13 @@ angular.module('adminNg.resources')
       responseType: 'text',
       transformResponse: [],
       transformRequest: function (data) {
-        var workflowConfiguration = {};
-
         if (angular.isUndefined(data)) {
           return data;
         }
         // The end point expects a multipart request payload with two fields
         // 1. A form field called 'metadata' containing asset data
         // 2. A non-form field which contains a File object
-        var fd = new FormData(), assets, tempAssetList = [], flavorList = [];
+        var fd = new FormData(), assets;
         var assetMetadata = data['metadata'].assets;
         if (data['upload-asset']) {
           assets = data['upload-asset'];
@@ -56,29 +54,8 @@ angular.module('adminNg.resources')
           angular.forEach(assets, function(files, name) {
             angular.forEach(files, function (file, index) {
               fd.append(name + '.' + index, file);
-              tempAssetList.push(name);
             });
           });
-        }
-
-        // get source flavors
-        assetMetadata.forEach(function(dataItem) {
-          if (tempAssetList.indexOf(dataItem.id) >= 0) {
-            flavorList.push(dataItem.flavorType + '/' + dataItem.flavorSubType);
-            // Special case to flag workflow to skip the "search+preview" image operation.
-            // If more than one special case comes up in the future,
-            // consider generalizing variable creation with
-            //   camelCase('uploaded', flavor, subflavor)
-            if (dataItem.flavorSubType == 'search+preview') {
-              workflowConfiguration['uploadedSearchPreview'] = 'true';
-            }
-          }
-        });
-
-        // set workflow boolean param and flavor list param
-        if (flavorList.length > 0) {
-          workflowConfiguration['downloadSourceflavorsExist'] = 'true';
-          workflowConfiguration['download-source-flavors'] = flavorList.join(', ');
         }
 
         // Add metadata form field
@@ -88,7 +65,7 @@ angular.module('adminNg.resources')
           },
           processing: {
             workflow: data['workflow'],
-            configuration: workflowConfiguration
+            configuration: {}
           }
         }));
 

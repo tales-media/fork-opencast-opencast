@@ -65,9 +65,7 @@ angular.module('adminNg.resources')
         var fd = new FormData(),
             source,
             sourceType = data.source.type,
-            assetConfig,
-            tempAssetList = [],
-            flavorList = [];
+            assetConfig;
 
         // If asset upload files exist, add asset mapping defaults
         // IndexServiceImpl processes the catalog or attachment based on the asset metadata map
@@ -140,24 +138,8 @@ angular.module('adminNg.resources')
           angular.forEach(data['upload-asset'].assets, function(files, name) {
             angular.forEach(files, function (file, index) {
               fd.append(name + '.' + index, file);
-              tempAssetList.push(name);
             });
           });
-          // special case to override creation of search preview when one is uploaded
-          assetConfig['options'].forEach(function(dataItem) {
-            if (tempAssetList.indexOf(dataItem.id) >= 0) {
-              flavorList.push(dataItem.flavorType + '/' + dataItem.flavorSubType);
-              if (dataItem.flavorSubType == 'search+preview') {
-                data.processing.workflow.selection.configuration['uploadedSearchPreview'] = 'true';
-              }
-            }
-          });
-        }
-
-        // set workflow boolean param and flavor list param
-        if (flavorList.length > 0) {
-          data.processing.workflow.selection.configuration['downloadSourceflavorsExist'] = 'true';
-          data.processing.workflow.selection.configuration['download-source-flavors'] = flavorList.join(', ');
         }
 
         // Remove useless information for the request
@@ -188,4 +170,3 @@ angular.module('adminNg.resources')
     }
   });
 }]);
-

@@ -174,7 +174,6 @@ And to the _defaults_ operation:
         <configuration key="comment">false</configuration>
         <configuration key="publishToMediaModule">true</configuration>
         <configuration key="publishToOaiPmh">true</configuration>
-        <configuration key="uploadedSearchPreview">false</configuration>
         <configuration key="publishLive">false</configuration>
       </configurations>
     </operation>
