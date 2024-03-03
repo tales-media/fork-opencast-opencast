@@ -24,26 +24,24 @@
       </activation>
       <modules>
         <module>karaf-features</module>
-        <module>dist-admin</module>
-        <module>dist-adminpresentation</module>
-        <module>dist-allinone</module>
-        <module>dist-ingest</module>
-        <module>dist-presentation</module>
-        <module>dist-worker</module>
+        <module>dist-shio-allinone</module>
+        <module>dist-shio-controller</module>
+        <module>dist-shio-scheduler</module>
+        <module>dist-shio-worker</module>
       </modules>
     </profile>
     <profile>
       <id>allinone</id>
       <modules>
         <module>karaf-features</module>
-        <module>dist-allinone</module>
+        <module>dist-shio-allinone</module>
       </modules>
     </profile>
     <profile>
       <id>dev</id>
       <modules>
         <module>karaf-features</module>
-        <module>dist-develop</module>
+        <module>dist-shio-develop</module>
       </modules>
     </profile>
     <profile>
@@ -118,20 +116,6 @@
             </libraries>
             <archiveZip>false</archiveZip>
             <archiveTarGz>false</archiveTarGz>
-            <installedFeatures>
-              <feature>opencast-security-cas</feature>
-              <feature>opencast-security-jwt</feature>
-              <feature>opencast-plugin-legacy-annotation</feature>
-              <feature>opencast-plugin-paella-player-6</feature>
-              <feature>opencast-plugin-transcription-services</feature>
-              <feature>opencast-plugin-userdirectory-brightspace</feature>
-              <feature>opencast-plugin-userdirectory-canvas</feature>
-              <feature>opencast-plugin-userdirectory-moodle</feature>
-              <feature>opencast-plugin-userdirectory-sakai</feature>
-              <feature>opencast-plugin-userdirectory-studip</feature>
-              <feature>opencast-plugin-userdirectory-brightspace</feature>
-              <feature>opencast-plugin-usertracking</feature>
-            </installedFeatures>
           </configuration>
         </plugin>
         <plugin>

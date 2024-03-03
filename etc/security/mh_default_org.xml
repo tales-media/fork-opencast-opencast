@@ -579,7 +579,7 @@
   <!-- # OAuth (LTI) Support # -->
   <!-- ####################### -->
 
-  <bean name="oauthProtectedResourceFilter" class="org.opencastproject.kernel.security.LtiProcessingFilter">
+  <!-- <bean name="oauthProtectedResourceFilter" class="org.opencastproject.kernel.security.LtiProcessingFilter">
     <property name="consumerDetailsService" ref="oAuthConsumerDetailsService" />
     <property name="tokenServices">
       <bean class="org.springframework.security.oauth.provider.token.InMemoryProviderTokenServices" />
@@ -588,7 +588,7 @@
       <bean class="org.springframework.security.oauth.provider.nonce.InMemoryNonceServices" />
     </property>
     <property name="authHandler" ref="ltiLaunchAuthenticationHandler" />
-  </bean>
+  </bean> -->
 
   <!-- ############### -->
   <!-- # CAS Support # -->
@@ -881,11 +881,11 @@
                   filter="(instanceId=theId)"/>
   -->
 
-  <osgi:reference id="oAuthConsumerDetailsService" cardinality="1..1"
-                  interface="org.springframework.security.oauth.provider.ConsumerDetailsService" />
+  <!-- <osgi:reference id="oAuthConsumerDetailsService" cardinality="1..1"
+                  interface="org.springframework.security.oauth.provider.ConsumerDetailsService" /> -->
 
-  <osgi:reference id="ltiLaunchAuthenticationHandler" cardinality="1..1"
-                  interface="org.springframework.security.oauth.provider.OAuthAuthenticationHandler" />
+  <!-- <osgi:reference id="ltiLaunchAuthenticationHandler" cardinality="1..1"
+                  interface="org.springframework.security.oauth.provider.OAuthAuthenticationHandler" /> -->
 
 
   <!-- ############################# -->
