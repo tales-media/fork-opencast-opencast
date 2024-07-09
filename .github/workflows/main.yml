@@ -1,0 +1,124 @@
+name: main
+
+on:
+  push:
+    branches:
+      - shio/*
+    tags:
+      - '*_shio.*'
+  pull_request:
+    branches:
+      - shio/*
+
+env:
+  DOCKER_BUILDKIT: 1
+  OCI_REGISTRY: rg.nl-ams.scw.cloud/shio-solutions
+  OCI_REPO_PREFIX: tales-media/fork/opencast
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    container:
+      image: rg.nl-ams.scw.cloud/shio-solutions/infra/build-opencast:1
+      credentials:
+        username: nologin
+        password: ${{ secrets.SCW_SECRET_KEY }}
+
+    env:
+      MAVEN_OPTS: |
+        -Dstyle.color=always
+        -Djansi.force=true
+        -Djansi.passthrough=true
+        -Djava.awt.headless=true
+        -Dhttp.keepAlive=false
+        -Dhttps.protocols=TLSv1.2
+        -Dmaven.wagon.http.pool=false
+        -Dmaven.wagon.httpconnectionManager.ttlSeconds=120
+        -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN
+        -Dorg.slf4j.simpleLogger.showDateTime=true
+      MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        if: ${{ github.event_name == 'push' }}
+        with:
+          registry: ${{ env.OCI_REGISTRY }}
+          username: nologin
+          password: ${{ secrets.SCW_SECRET_KEY }}
+
+      - name: info
+        run: |
+          docker version
+          docker info
+
+      - name: set tag version
+        if: ${{ github.ref_type == 'tag' }}
+        run: |
+          echo "${{ github.ref_name }}" > VERSION
+
+      - name: quickfixes
+        run: |
+          # quickfix for Git
+          git config --global --add safe.directory "$PWD"
+
+          # quickfix for running Firefox as root
+          chown "$(id -u):$(id -g)" "$HOME"
+
+      - name: build
+        run: |
+          ./mvnw $MAVEN_CLI_OPTS install \
+            -Pnone \
+            --threads 1.0C \
+            -Dsurefire.rerunFailingTestsCount=2
+
+      - name: assemble
+        working-directory: assemblies
+        run: |
+          ../mvnw $MAVEN_CLI_OPTS install --threads 1.0C
+
+      - name: build OCI images
+        run: |
+          export BUILD_DATE=$(date -u -Iseconds)
+
+          for f in assemblies/dist-tales-media*; do
+            f="$(basename "$f")"
+            dist="${f#*-}"
+            if [ "${dist}" = "tales-media-develop" ]; then continue; fi
+
+            docker build \
+              --build-arg VERSION="$(cat VERSION)" \
+              --build-arg OPENCAST_DISTRIBUTION="${dist}" \
+              --build-arg FFMPEG_VERSION="$(cat VERSION_FFMPEG)" \
+              --build-arg WHISPER_CPP_VERSION="$(cat VERSION_WHISPER_CPP)" \
+              --build-arg BUILD_DATE="$BUILD_DATE" \
+              --build-arg GIT_COMMIT="${{ github.sha }}" \
+              -t "${OCI_REGISTRY}/${OCI_REPO_PREFIX}/${dist}:latest" \
+              -t "${OCI_REGISTRY}/${OCI_REPO_PREFIX}/${dist}:${{ github.sha }}" \
+              -t "${OCI_REGISTRY}/${OCI_REPO_PREFIX}/${dist}:$(cat VERSION)" \
+              -f oci/Dockerfile \
+              .
+          done
+
+      - name: push
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          for f in assemblies/dist-tales-media*; do
+            f="$(basename "$f")"
+            dist="${f#*-}"
+            if [ "${dist}" = "tales-media-develop" ]; then continue; fi
+
+            docker push "${OCI_REGISTRY}/${OCI_REPO_PREFIX}/${dist}:$(cat VERSION)"
+          done
+
+      - name: push latest
+        if: ${{ github.event_name == 'push' && github.ref_type == 'branch' }}
+        run: |
+          for f in assemblies/dist-tales-media*; do
+            f="$(basename "$f")"
+            dist="${f#*-}"
+            if [ "${dist}" = "tales-media-develop" ]; then continue; fi
+
+            docker push "${OCI_REGISTRY}/${OCI_REPO_PREFIX}/${dist}:latest"
+          done
