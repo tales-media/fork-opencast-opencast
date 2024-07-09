@@ -9,10 +9,11 @@
   </parent>
   <properties>
     <opencast.basedir>${project.basedir}/../..</opencast.basedir>
+    <enableJobDispatching>true</enableJobDispatching>
   </properties>
-  <artifactId>opencast-dist-ingest</artifactId>
+  <artifactId>opencast-dist-tales-media-scheduler</artifactId>
   <packaging>karaf-assembly</packaging>
-  <name>Assemblies // Distribution Ingest</name>
+  <name>Assemblies // Distribution tales-media-scheduler</name>
   <dependencies>
     <dependency>
       <groupId>org.apache.karaf.features</groupId>
@@ -108,9 +109,7 @@
             <feature>eclipselink</feature>
             <feature>wrap</feature>
             <!-- Opencast features -->
-            <feature>opencast-ingest</feature>
-            <feature>opencast-pluginmanager</feature>
-            <feature>opencast-security-jwt</feature>
+            <feature>tales-media-scheduler</feature>
           </bootFeatures>
         </configuration>
       </plugin>

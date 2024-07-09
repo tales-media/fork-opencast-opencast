@@ -67,16 +67,9 @@
   <modules>
     <module>modules/admin-ui</module>
     <module>modules/admin-ui-frontend</module>
-    <module>modules/admin-ui-interface</module>
     <module>modules/adopter-registration-api</module>
     <module>modules/adopter-registration-impl</module>
     <module>modules/analyze-mediapackage-workflowoperation</module>
-    <module>modules/animate-api</module>
-    <module>modules/animate-impl</module>
-    <module>modules/animate-remote</module>
-    <module>modules/animate-workflowoperation</module>
-    <module>modules/annotation-api</module>
-    <module>modules/annotation-impl</module>
     <module>modules/asset-manager-api</module>
     <module>modules/asset-manager-impl</module>
     <module>modules/asset-manager-static-file-authorization</module>
@@ -87,7 +80,6 @@
     <module>modules/authorization-xacml</module>
     <module>modules/caption-api</module>
     <module>modules/caption-impl</module>
-    <module>modules/caption-remote</module>
     <module>modules/capture-admin-service-api</module>
     <module>modules/capture-admin-service-impl</module>
     <module>modules/comments-workflowoperation</module>
@@ -107,41 +99,26 @@
     <module>modules/crop-remote</module>
     <module>modules/crop-workflowoperation</module>
     <module>modules/db</module>
-    <module>modules/dictionary-api</module>
-    <module>modules/dictionary-hunspell</module>
-    <module>modules/dictionary-none</module>
-    <module>modules/dictionary-regexp</module>
     <module>modules/distribution-service-api</module>
     <module>modules/distribution-service-aws-s3-api</module>
-    <module>modules/distribution-service-aws-s3-remote</module>
     <module>modules/distribution-service-aws-s3</module>
-    <module>modules/distribution-service-download-remote</module>
     <module>modules/distribution-service-download</module>
-    <module>modules/distribution-service-streaming-remote</module>
     <module>modules/distribution-service-streaming-wowza</module>
     <module>modules/distribution-workflowoperation</module>
     <module>modules/dublincore</module>
     <module>modules/editor-service-api</module>
-    <module>modules/editor-service-remote</module>
     <module>modules/editor-service</module>
-    <module>modules/editor</module>
     <module>modules/elasticsearch-api</module>
     <module>modules/elasticsearch-impl</module>
     <module>modules/elasticsearch-index</module>
     <module>modules/email-template-service-api</module>
     <module>modules/email-template-service-impl</module>
-    <module>modules/engage-paella-player-7</module>
-    <module>modules/engage-ui</module>
     <module>modules/event-comment</module>
     <module>modules/execute-api</module>
     <module>modules/execute-impl</module>
     <module>modules/execute-remote</module>
     <module>modules/execute-workflowoperation</module>
     <module>modules/external-api</module>
-    <module>modules/fileupload</module>
-    <module>modules/hello-world-api</module>
-    <module>modules/hello-world-impl</module>
-    <module>modules/hello-world-workflowoperation</module>
     <module>modules/subtitle-timeshift-workflowoperation</module>
     <module>modules/incident-workflowoperation</module>
     <module>modules/index-service</module>
@@ -160,10 +137,6 @@
     <module>modules/live-schedule-api</module>
     <module>modules/live-schedule-impl</module>
     <module>modules/logging-workflowoperation</module>
-    <module>modules/lti-service-api</module>
-    <module>modules/lti-service-impl</module>
-    <module>modules/lti-service-remote</module>
-    <module>modules/lti</module>
     <module>modules/mattermost-notification-workflowoperation</module>
     <module>modules/message-broker-api</module>
     <module>modules/metadata-api</module>
@@ -174,36 +147,24 @@
     <module>modules/notification-workflowoperation</module>
     <module>modules/oaipmh-api</module>
     <module>modules/oaipmh-persistence</module>
-    <module>modules/oaipmh-remote</module>
     <module>modules/oaipmh</module>
     <module>modules/playlists</module>
-    <module>modules/plugin-manager</module>
     <module>modules/presets</module>
     <module>modules/publication-service-api</module>
-    <module>modules/publication-service-configurable-remote</module>
     <module>modules/publication-service-configurable</module>
     <module>modules/publication-service-oaipmh-remote</module>
     <module>modules/publication-service-oaipmh</module>
     <module>modules/publication-service-youtube-remote</module>
-    <module>modules/publication-service-youtube-v3</module>
-    <module>modules/redirect</module>
     <module>modules/rename-files-workflowoperation</module>
     <module>modules/rest-test-environment</module>
     <module>modules/runtime-info-ui</module>
     <module>modules/runtime-info</module>
     <module>modules/scheduler-api</module>
     <module>modules/scheduler-impl</module>
-    <module>modules/scheduler-remote</module>
     <module>modules/schema</module>
     <module>modules/search-service-api</module>
     <module>modules/search-service-impl</module>
-    <module>modules/security-aai</module>
-    <module>modules/security-cas-client-wrapper</module>
-    <module>modules/security-cas</module>
     <module>modules/security-jwt</module>
-    <module>modules/security-ldap</module>
-    <module>modules/security-lti</module>
-    <module>modules/security-shibboleth</module>
     <module>modules/series-service-api</module>
     <module>modules/series-service-impl</module>
     <module>modules/series-service-remote</module>
@@ -215,10 +176,6 @@
     <module>modules/smil-api</module>
     <module>modules/smil-impl</module>
     <module>modules/smil-workflowoperation</module>
-    <module>modules/sox-api</module>
-    <module>modules/sox-impl</module>
-    <module>modules/sox-remote</module>
-    <module>modules/sox-workflowoperation</module>
     <module>modules/speech-to-text-api</module>
     <module>modules/speech-to-text-impl</module>
     <module>modules/speech-to-text-remote</module>
@@ -230,21 +187,10 @@
     <module>modules/statistics-export-service-api</module>
     <module>modules/statistics-export-service-impl</module>
     <module>modules/statistics-provider-influx</module>
-    <module>modules/statistics-provider-random</module>
     <module>modules/statistics-service-api</module>
     <module>modules/statistics-service-impl</module>
-    <module>modules/statistics-service-remote</module>
     <module>modules/statistics-writer-workflowoperation</module>
-    <module>modules/studio</module>
     <module>modules/studio-service</module>
-    <module>modules/termination-state-api</module>
-    <module>modules/termination-state-aws</module>
-    <module>modules/termination-state-impl</module>
-    <module>modules/textanalyzer-api</module>
-    <module>modules/textanalyzer-impl</module>
-    <module>modules/textanalyzer-remote</module>
-    <module>modules/textanalyzer-workflowoperation</module>
-    <module>modules/textextractor-tesseract</module>
     <module>modules/themes-workflowoperation</module>
     <module>modules/themes</module>
     <module>modules/timelinepreviews-api</module>
@@ -252,28 +198,13 @@
     <module>modules/timelinepreviews-remote</module>
     <module>modules/timelinepreviews-workflowoperation</module>
     <module>modules/tobira</module>
-    <module>modules/transcription-service-amberscript</module>
-    <module>modules/transcription-service-api</module>
-    <module>modules/transcription-service-google-speech-impl</module>
-    <module>modules/transcription-service-ibm-watson-impl</module>
-    <module>modules/transcription-service-microsoft-azure</module>
-    <module>modules/transcription-service-persistence</module>
-    <module>modules/transcription-service-workflowoperation</module>
     <module>modules/urlsigning-common</module>
     <module>modules/urlsigning-service-api</module>
     <module>modules/urlsigning-service-impl</module>
     <module>modules/urlsigning-verifier-service-api</module>
     <module>modules/urlsigning-verifier-service-impl</module>
     <module>modules/user-interface-configuration</module>
-    <module>modules/userdirectory-brightspace</module>
-    <module>modules/userdirectory-canvas</module>
-    <module>modules/userdirectory-ldap</module>
-    <module>modules/userdirectory-moodle</module>
-    <module>modules/userdirectory-sakai</module>
-    <module>modules/userdirectory-studip</module>
     <module>modules/userdirectory</module>
-    <module>modules/usertracking-api</module>
-    <module>modules/usertracking-impl</module>
     <module>modules/videoeditor-api</module>
     <module>modules/videoeditor-ffmpeg-impl</module>
     <module>modules/videoeditor-remote</module>
@@ -1909,12 +1840,6 @@
       <id>mvn.opencast.org</id>
       <name>Opencast 3rd-Party Repository</name>
       <url>https://mvn.opencast.org/</url>
-    </repository>
-    <!-- Used by the Microsoft Azure Transcription Service-->
-    <repository>
-      <id>maven-cognitiveservices-speech</id>
-      <name>Microsoft Cognitive Services Speech Maven Repository</name>
-      <url>https://csspeechstorage.blob.core.windows.net/maven/</url>
     </repository>
   </repositories>
   <distributionManagement>
