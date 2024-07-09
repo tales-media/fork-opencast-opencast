@@ -1,0 +1,12 @@
+.git/
+.github/
+.mvn/
+assemblies/
+docs/
+etc/
+modules/
+target/
+.dockerignore
+VERSION
+VERSION_FFMPEG
+VERSION_WHISPER_CPP
