@@ -46,7 +46,6 @@ function monitorService($http, $location, $translate, Storage) {
     services.numErr = 0;
 
     Monitoring.getBasicServiceStats();
-    Monitoring.getRegistrationState();
   };
 
   Monitoring.getRegistrationState = function() {
