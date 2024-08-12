@@ -77,7 +77,7 @@ public class DefaultRepository extends OaiPmhRepository {
 
   @Override
   public String getRepositoryName() {
-    return "Matterhorn OAI-PMH repository";
+    return "tales.media OAI-PMH repository";
   }
 
   @Override
