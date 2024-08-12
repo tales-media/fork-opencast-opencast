@@ -65,6 +65,9 @@
     <xmlsec.version>2.2.6</xmlsec.version>
   </properties>
   <modules>
+    <!-- custom tales.media modules -->
+    <module>modules/tales-media-userdirectory</module>
+
     <module>modules/admin-ui</module>
     <module>modules/admin-ui-frontend</module>
     <module>modules/adopter-registration-api</module>
