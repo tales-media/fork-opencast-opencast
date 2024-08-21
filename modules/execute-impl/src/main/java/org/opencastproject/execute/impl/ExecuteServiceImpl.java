@@ -489,7 +489,7 @@ public class ExecuteServiceImpl extends AbstractJobProducer implements ExecuteSe
       BufferedReader stdout = new BufferedReader(new InputStreamReader(p.getInputStream()));
       String line;
       while ((line = stdout.readLine()) != null) {
-        logger.debug(line);
+        logger.info(line);
       }
       result = p.waitFor();
 
