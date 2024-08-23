@@ -63,12 +63,19 @@ public final class DistributionPathUtils {
     String downloadDir = StringUtils.trimToNull(bundleContext.getProperty(CONFIG_DOWNLOAD_ROOT));
 
     // Is the distribution download available locally?
-    if (downloadDir != null && new File(downloadDir).isDirectory()) {
-      logger.debug("Found local distribution directory at {}", downloadDir);
-      return downloadDir;
+    if (downloadDir == null) {
+      logger.warn("Local distribution directory is not set. "
+          + "Directly reading files from download distribution is disabled.");
+      return null;
     }
 
-    return null;
+    if (new File(downloadDir).isDirectory()) {
+      logger.warn("Could not find local distribution directory. Assuming it will be created later.");
+    } else {
+      logger.debug("Found local distribution directory at {}", downloadDir);
+    }
+
+    return downloadDir;
   }
 
   /**
@@ -87,12 +94,13 @@ public final class DistributionPathUtils {
     String downloadUrl = StringUtils.trimToNull(bundleContext.getProperty(CONFIG_DOWNLOAD_URL));
 
     // Is the distribution download available locally?
-    if (downloadUrl != null) {
-      logger.debug("Local distribution URL is {}", downloadUrl);
-      return downloadUrl;
+    if (downloadUrl == null) {
+      logger.warn("Local distribution URL is not set. Directly reading files from download distribution is disabled.");
+      return null;
     }
 
-    return null;
+    logger.debug("Local distribution URL is {}", downloadUrl);
+    return downloadUrl;
   }
 
 
