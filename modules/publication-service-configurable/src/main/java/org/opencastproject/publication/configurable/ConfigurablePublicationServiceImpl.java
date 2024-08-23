@@ -307,7 +307,7 @@ public class ConfigurablePublicationServiceImpl extends AbstractJobProducer impl
     this.organizationDirectoryService = organizationDirectoryService;
   }
 
-  @Reference(target = "(distribution.channel=download)")
+  @Reference(target = "(distribution.channel=aws.s3)")
   public void setDownloadDistributionService(DownloadDistributionService downloadDistributionService) {
     this.distributionService = downloadDistributionService;
   }
