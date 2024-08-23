@@ -905,7 +905,7 @@ public class LiveScheduleServiceImpl implements LiveScheduleService {
 
   @Reference(
       name = "DownloadDistributionService",
-      target = "(distribution.channel=download)"
+      target = "(distribution.channel=aws.s3)"
   )
   public void setDownloadDistributionService(DownloadDistributionService service) {
     this.downloadDistributionService = service;
