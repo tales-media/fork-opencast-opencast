@@ -96,7 +96,7 @@ public final class RepublishOaiPmhWorkflowOperationHandler extends AbstractWorkf
     logger.debug("Start updating metadata of the media package {} in OAI-PMH repository {}",
             mp.getIdentifier().toString(), repository);
     try {
-      Job updateMetadataJob = oaiPmhPublicationService.updateMetadata(mp, repository, flavors, tags, true);
+      Job updateMetadataJob = oaiPmhPublicationService.updateMetadata(mp, repository, flavors, tags, false);
       if (updateMetadataJob == null) {
         logger.info("Unable to create an OAI-PMH update metadata job for the media package {} in repository {}",
                 mp.getIdentifier().toString(), repository);
