@@ -84,7 +84,7 @@ public class ConfiguredTagsAndFlavors {
    */
   public String getSingleSrcTag() {
     if (this.srcTags.isEmpty()) {
-      throw new IllegalStateException("No source-tag was configured!");
+      return null;
     }
     if (this.srcTags.size() > 1) {
       throw new IllegalStateException("More than one source-tag was configured!");
@@ -98,7 +98,7 @@ public class ConfiguredTagsAndFlavors {
    */
   public String getSingleTargetTag() {
     if (this.targetTags.isEmpty()) {
-      throw new IllegalStateException("No target-tag was configured!");
+      return null;
     }
     if (this.targetTags.size() > 1) {
       throw new IllegalStateException("More than one target-tag was configured!");
@@ -112,7 +112,7 @@ public class ConfiguredTagsAndFlavors {
    */
   public MediaPackageElementFlavor getSingleSrcFlavor() {
     if (this.srcFlavors.isEmpty()) {
-      throw new IllegalStateException("No source-flavor was configured!");
+      return null;
     }
     if (this.srcFlavors.size() > 1) {
       throw new IllegalStateException("More than one source-flavor was configured!");
@@ -126,7 +126,7 @@ public class ConfiguredTagsAndFlavors {
    */
   public MediaPackageElementFlavor getSingleTargetFlavor() {
     if (this.targetFlavors.isEmpty()) {
-      throw new IllegalStateException("No target-flavor was configured!");
+      return null;
     }
     if (this.targetFlavors.size() > 1) {
       throw new IllegalStateException("More than one target-flavor was configured!");
