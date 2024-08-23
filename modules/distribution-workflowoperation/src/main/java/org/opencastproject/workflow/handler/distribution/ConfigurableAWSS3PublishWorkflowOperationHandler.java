@@ -21,7 +21,6 @@
 package org.opencastproject.workflow.handler.distribution;
 
 import org.opencastproject.distribution.api.DownloadDistributionService;
-import org.opencastproject.distribution.api.StreamingDistributionService;
 import org.opencastproject.security.api.SecurityService;
 import org.opencastproject.serviceregistry.api.ServiceRegistry;
 import org.opencastproject.workflow.api.WorkflowOperationHandler;
@@ -48,11 +47,6 @@ public class ConfigurableAWSS3PublishWorkflowOperationHandler extends Configurab
   @Reference(target = "(distribution.channel=aws.s3)")
   void setDownloadDistributionService(DownloadDistributionService distributionService) {
     super.setDownloadDistributionService(distributionService);
-  }
-
-  @Reference(target = "(distribution.channel=streaming)")
-  void setStreamingDistributionService(StreamingDistributionService streamingDistributionService) {
-    super.setStreamingDistributionService(streamingDistributionService);
   }
 
   /** OSGi DI */
