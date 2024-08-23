@@ -1332,7 +1332,7 @@ public class EncoderEngine implements AutoCloseable {
           File file = segments.get(i);
           // Construct a new name with old name (unique within this group) and profile suffix
           String newname = FilenameUtils.concat(file.getParent(),
-                  FilenameUtils.getBaseName(file.getName()) + suffixes.get(i));
+                  FilenameUtils.getBaseName(file.getName()) + "-" + suffixes.get(i));
           renames.put(file, new File(newname)); // only segments change names
         }
         // Adjust the playlists to use new names
