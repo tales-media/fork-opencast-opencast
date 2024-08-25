@@ -108,6 +108,8 @@ public class SeriesServiceImpl extends AbstractIndexProducer implements SeriesSe
 
   private static final String THEME_PROPERTY_NAME = "theme";
 
+  private static final String TALES_MEDIA_DEFAULT_SERIES_LICENSE = "ALLRIGHTS";
+
   /** Persistent storage */
   protected SeriesServiceDatabase persistence;
 
@@ -186,6 +188,11 @@ public class SeriesServiceImpl extends AbstractIndexProducer implements SeriesSe
     try {
       for (DublinCoreCatalog dublinCore : isNew(notNull(dc, "dc"))) {
         final String id = dublinCore.getFirst(DublinCore.PROPERTY_IDENTIFIER);
+
+        if (!dublinCore.hasValue(DublinCore.PROPERTY_LICENSE)) {
+          dublinCore.set(DublinCore.PROPERTY_LICENSE, TALES_MEDIA_DEFAULT_SERIES_LICENSE);
+          logger.debug("Setting series default license to '{}'", TALES_MEDIA_DEFAULT_SERIES_LICENSE);
+        }
 
         if (!dublinCore.hasValue(DublinCore.PROPERTY_CREATED)) {
           DublinCoreValue date = EncodingSchemeUtils.encodeDate(new Date(), Precision.Minute);
