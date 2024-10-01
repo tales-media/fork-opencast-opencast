@@ -74,6 +74,8 @@ public class EncodeWorkflowOperationHandler extends AbstractWorkflowOperationHan
 
   /** The logging facility */
   private static final Logger logger = LoggerFactory.getLogger(EncodeWorkflowOperationHandler.class);
+  private static final String PLUS = "+";
+  private static final String MINUS = "-";
 
   /** The composer service */
   private ComposerService composerService = null;
@@ -167,6 +169,20 @@ public class EncodeWorkflowOperationHandler extends AbstractWorkflowOperationHan
       elementSelector.addTag(tag);
     }
 
+    List<String> removeTags = new ArrayList<>();
+    List<String> addTags = new ArrayList<>();
+    List<String> overrideTags = new ArrayList<>();
+
+    for (String tag : targetTagsOption) {
+      if (tag.startsWith(MINUS)) {
+        removeTags.add(tag);
+      } else if (tag.startsWith(PLUS)) {
+        addTags.add(tag);
+      } else {
+        overrideTags.add(tag);
+      }
+    }
+
     // Find the encoding profile
     String profilesOption = StringUtils.trimToNull(operation.getConfiguration("encoding-profiles"));
     List<EncodingProfile> profiles = new ArrayList<EncodingProfile>();
@@ -242,9 +258,23 @@ public class EncodeWorkflowOperationHandler extends AbstractWorkflowOperationHan
 
         // Adjust the target tags
         for (Track encodedTrack : composedTracks) {
-          for (String tag : targetTagsOption) {
-            logger.trace("Tagging composed track {} with '{}'", encodedTrack.toString(), tag);
-            encodedTrack.addTag(tag);
+          if (overrideTags.isEmpty()) {
+            // add tags of original track
+            for (String tag : track.getTags()) {
+              encodedTrack.addTag(tag);
+            }
+            // remove and add specified target tags
+            for (String tag : removeTags) {
+              encodedTrack.removeTag(tag.substring(MINUS.length()));
+            }
+            for (String tag : addTags) {
+              encodedTrack.addTag(tag.substring(PLUS.length()));
+            }
+          } else {
+            // overwrite original tags
+            for (String tag : overrideTags) {
+              encodedTrack.addTag(tag);
+            }
           }
         }
 
