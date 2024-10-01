@@ -80,6 +80,9 @@ public class CleanupWorkflowOperationHandler extends AbstractWorkflowOperationHa
   /** The element flavors to maintain in the original mediapackage. All others will be removed */
   public static final String PRESERVE_FLAVOR_PROPERTY = "preserve-flavors";
 
+  /** The element tags to maintain in the original mediapackage. All others will be removed */
+  public static final String PRESERVE_TAGS_PROPERTY = "preserve-tags";
+
   /** Deleting external URI's config key */
   public static final String DELETE_EXTERNAL = "delete-external";
 
@@ -169,6 +172,9 @@ public class CleanupWorkflowOperationHandler extends AbstractWorkflowOperationHa
     String flavors = currentOperation.getConfiguration(PRESERVE_FLAVOR_PROPERTY);
     final List<MediaPackageElementFlavor> flavorsToPreserve = new ArrayList<>();
 
+    String tags = currentOperation.getConfiguration(PRESERVE_TAGS_PROPERTY);
+    final List<String> tagsToPreserve;
+
     boolean deleteExternal = BooleanUtils.toBoolean(currentOperation.getConfiguration(DELETE_EXTERNAL));
 
     String delayStr = currentOperation.getConfiguration(DELAY);
@@ -195,13 +201,15 @@ public class CleanupWorkflowOperationHandler extends AbstractWorkflowOperationHa
     for (String flavor : asList(flavors))
       flavorsToPreserve.add(MediaPackageElementFlavor.parseFlavor(flavor));
 
+    tagsToPreserve = asList(tags);
+
     List<MediaPackageElement> elementsToRemove = new ArrayList<>();
     for (MediaPackageElement element : mediaPackage.getElements()) {
       if (element.getURI() == null)
         continue;
 
 
-      if (!isPreserved(element, flavorsToPreserve))
+      if (!isPreserved(element, flavorsToPreserve, tagsToPreserve))
         elementsToRemove.add(element);
     }
 
@@ -246,9 +254,11 @@ public class CleanupWorkflowOperationHandler extends AbstractWorkflowOperationHa
    *
    * @param element Media package element to test
    * @param flavorsToPreserve Flavors to preserve
+   * @param tagsToPreserve Tags to preserve
    * @return true, if elements flavor matches one of the preserved flavors, false otherwise
    */
-  private boolean isPreserved(MediaPackageElement element, List<MediaPackageElementFlavor> flavorsToPreserve) {
+  private boolean isPreserved(MediaPackageElement element, List<MediaPackageElementFlavor> flavorsToPreserve,
+      List<String> tagsToPreserve) {
     if (Publication == element.getElementType())
       return true;
 
@@ -257,6 +267,13 @@ public class CleanupWorkflowOperationHandler extends AbstractWorkflowOperationHa
         return true;
       }
     }
+
+    for (String tag : tagsToPreserve) {
+      if (element.containsTag(tag)) {
+        return true;
+      }
+    }
+
     return false;
   }
 
