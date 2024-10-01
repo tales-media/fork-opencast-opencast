@@ -76,7 +76,6 @@ import com.google.common.cache.CacheBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Equator;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.utils.URIUtils;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -85,8 +84,10 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -115,12 +116,8 @@ import java.util.stream.Collectors;
     }
 )
 public class LiveScheduleServiceImpl implements LiveScheduleService {
-  /** The server url property **/
-  static final String SERVER_URL_PROPERTY = "org.opencastproject.server.url";
-  /** The engage base url property **/
-  static final String ENGAGE_URL_PROPERTY = "org.opencastproject.engage.ui.url";
-  /** The default path to the player **/
-  static final String PLAYER_PATH = "/play/";
+  /** The player base url property **/
+  public static final String ENGAGE_PLAYER_URL_PROPERTY = "org.opencastproject.engage.player.url";
 
   /** Default values for configuration options */
   private static final String DEFAULT_STREAM_MIME_TYPE = "video/mp4";
@@ -152,6 +149,9 @@ public class LiveScheduleServiceImpl implements LiveScheduleService {
   public static final String LIVE_DISTRIBUTION_SERVICE = "live.distributionService";
   public static final String LIVE_PUBLISH_STREAMING = "live.publishStreaming";
 
+  /** Template variable names */
+  protected static final String EVENT_ID_TEMPLATE_KEY = "{{event_id}}";
+
   private static final MediaPackageElementFlavor[] publishFlavors = { MediaPackageElements.EPISODE,
       MediaPackageElements.SERIES, MediaPackageElements.XACML_POLICY_EPISODE,
       MediaPackageElements.XACML_POLICY_SERIES }; // make configurable later
@@ -164,7 +164,6 @@ public class LiveScheduleServiceImpl implements LiveScheduleService {
   private String streamMimeType;
   private String[] streamResolution;
   private MediaPackageElementFlavor[] liveFlavors;
-  private String serverUrl;
   private Cache<String, Version> snapshotVersionCache
       = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).build();
   /** Which streaming formats should be published automatically */
@@ -198,12 +197,6 @@ public class LiveScheduleServiceImpl implements LiveScheduleService {
   protected void activate(ComponentContext context) {
     BundleContext bundleContext = context.getBundleContext();
 
-    serverUrl = StringUtils.trimToNull(bundleContext.getProperty(SERVER_URL_PROPERTY));
-    if (serverUrl == null) {
-      logger.warn("Server url was not set in '{}'", SERVER_URL_PROPERTY);
-    } else {
-      logger.info("Server url is {}", serverUrl);
-    }
     systemUserName = bundleContext.getProperty(SecurityUtil.PROPERTY_KEY_SYS_USER);
 
     @SuppressWarnings("rawtypes")
@@ -738,26 +731,26 @@ public class LiveScheduleServiceImpl implements LiveScheduleService {
     }
 
     logger.debug("Adding live channel publication element to media package {}", mp);
-    String engageUrlString = null;
-    if (currentOrg != null) {
-      engageUrlString = StringUtils.trimToNull(currentOrg.getProperties().get(ENGAGE_URL_PROPERTY));
+    if (currentOrg == null) {
+      throw new LiveScheduleException("Cannot publish livestream: organization is not set");
     }
-    if (engageUrlString == null) {
-      engageUrlString = serverUrl;
-      logger.info(
-          "Using 'server.url' as a fallback for the non-existing organization level key '{}' for the publication url",
-          ENGAGE_URL_PROPERTY);
+    String engagePlayerURLTemplate = StringUtils.trimToNull(currentOrg.getProperties().get(ENGAGE_PLAYER_URL_PROPERTY));
+    if (engagePlayerURLTemplate == null) {
+      throw new LiveScheduleException(String.format("Organization level key '%s' does not exist.",
+          ENGAGE_PLAYER_URL_PROPERTY));
     }
 
     try {
       // Create new distribution element
-      URI engageUri = URIUtils.resolve(new URI(engageUrlString), PLAYER_PATH + mp.getIdentifier().toString());
+      String playerURLString = engagePlayerURLTemplate.replace(EVENT_ID_TEMPLATE_KEY, mp.getIdentifier().toString());
+      URI engageUri = new URL(playerURLString).toURI();
+
       Publication publicationElement = PublicationImpl.publication(UUID.randomUUID().toString(), CHANNEL_ID, engageUri,
               MimeTypes.parseMimeType("text/html"));
       mp.add(publicationElement);
       createOrUpdatePublicationTracks(publicationElement, generatedTracks);
       return mp;
-    } catch (URISyntaxException e) {
+    } catch (URISyntaxException | MalformedURLException e) {
       throw new LiveScheduleException(e);
     }
   }

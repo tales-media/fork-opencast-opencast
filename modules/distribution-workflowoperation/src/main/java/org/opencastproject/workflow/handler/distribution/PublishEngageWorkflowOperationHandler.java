@@ -22,7 +22,6 @@
 package org.opencastproject.workflow.handler.distribution;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.opencastproject.systems.OpencastConstants.SERVER_URL_PROPERTY;
 import static org.opencastproject.util.data.Option.option;
 import static org.opencastproject.util.data.functions.Strings.toBool;
 import static org.opencastproject.util.data.functions.Strings.trimToNone;
@@ -60,7 +59,6 @@ import org.opencastproject.serviceregistry.api.ServiceRegistry;
 import org.opencastproject.serviceregistry.api.ServiceRegistryException;
 import org.opencastproject.util.MimeTypes;
 import org.opencastproject.util.NotFoundException;
-import org.opencastproject.util.UrlSupport;
 import org.opencastproject.workflow.api.AbstractWorkflowOperationHandler;
 import org.opencastproject.workflow.api.WorkflowInstance;
 import org.opencastproject.workflow.api.WorkflowOperationException;
@@ -71,7 +69,6 @@ import org.opencastproject.workflow.api.WorkflowOperationResult.Action;
 import org.opencastproject.workspace.api.Workspace;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.utils.URIUtils;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -82,6 +79,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -113,7 +111,7 @@ public class PublishEngageWorkflowOperationHandler extends AbstractWorkflowOpera
   private static final Logger logger = LoggerFactory.getLogger(PublishEngageWorkflowOperationHandler.class);
 
   /** Configuration properties id */
-  static final String ENGAGE_URL_PROPERTY = "org.opencastproject.engage.ui.url";
+  static final String ENGAGE_PLAYER_URL_PROPERTY = "org.opencastproject.engage.player.url";
   static final String STREAMING_PUBLISH_PROPERTY = "org.opencastproject.publish.streaming.formats";
 
   /** Workflow configuration option keys */
@@ -133,8 +131,8 @@ public class PublishEngageWorkflowOperationHandler extends AbstractWorkflowOpera
   private static final String MERGE_FORCE_FLAVORS_DEFAULT = "dublincore/*,security/*";
   private static final String ADD_FORCE_FLAVORS_DEFAULT = "";
 
-  /** Path the REST endpoint which will re-direct users to the currently configured video player **/
-  static final String PLAYER_PATH = "/play/";
+  /** Template variable names */
+  protected static final String EVENT_ID_TEMPLATE_KEY = "{{event_id}}";
 
   /** Name constant for the 'merge' strategy **/
   static final String PUBLISH_STRATEGY_MERGE = "merge";
@@ -152,9 +150,6 @@ public class PublishEngageWorkflowOperationHandler extends AbstractWorkflowOpera
   private SearchService searchService = null;
 
   private Workspace workspace;
-
-  /** The server url */
-  private URL serverUrl;
 
   private OrganizationDirectoryService organizationDirectoryService = null;
 
@@ -228,7 +223,6 @@ public class PublishEngageWorkflowOperationHandler extends AbstractWorkflowOpera
     BundleContext bundleContext = cc.getBundleContext();
 
     // Get configuration
-    serverUrl = UrlSupport.url(bundleContext.getProperty(SERVER_URL_PROPERTY));
     publishedStreamingFormats = Arrays.asList(Optional.ofNullable(StringUtils.split(
             bundleContext.getProperty(STREAMING_PUBLISH_PROPERTY), ",")).orElse(new String[0]));
   }
@@ -391,7 +385,7 @@ public class PublishEngageWorkflowOperationHandler extends AbstractWorkflowOpera
 
       logger.debug("Distribute of mediapackage {} completed", mediaPackage);
 
-      String engageUrlString = null;
+      String engagePlayerURLTemplate = null;
       try {
         MediaPackage mediaPackageForSearch = getMediaPackageForSearchIndex(mediaPackage, jobs, downloadSubflavor,
                 targetDownloadTags, downloadElementIds, streamingSubflavor, streamingElementIds, targetStreamingTags);
@@ -432,21 +426,15 @@ public class PublishEngageWorkflowOperationHandler extends AbstractWorkflowOpera
 
         logger.info("Publishing media package {} to search index", mediaPackageForSearch);
 
-        URL engageBaseUrl;
         Organization organization = organizationDirectoryService.getOrganization(workflowInstance.getOrganizationId());
-        engageUrlString = StringUtils.trimToNull(organization.getProperties().get(ENGAGE_URL_PROPERTY));
-        if (engageUrlString != null) {
-          engageBaseUrl = new URL(engageUrlString);
-        } else {
-          engageBaseUrl = serverUrl;
-          logger.info(
-              "Using 'server.url' as a fallback for the non-existing organization level key '{}' "
-                  + "for the publication url",
-              ENGAGE_URL_PROPERTY);
+        engagePlayerURLTemplate = StringUtils.trimToNull(organization.getProperties().get(ENGAGE_PLAYER_URL_PROPERTY));
+        if (engagePlayerURLTemplate == null) {
+          throw new WorkflowOperationException(String.format("Organization level key '%s' does not exist.",
+              ENGAGE_PLAYER_URL_PROPERTY));
         }
 
         // create the publication URI (used by Admin UI for event details link)
-        URI engageUri = this.createEngageUri(engageBaseUrl.toURI(), mediaPackage);
+        URI engageUri = this.createEngageUri(engagePlayerURLTemplate, mediaPackage);
 
         // Create new distribution element
         Publication publicationElement = PublicationImpl.publication(UUID.randomUUID().toString(), CHANNEL_ID,
@@ -496,7 +484,7 @@ public class PublishEngageWorkflowOperationHandler extends AbstractWorkflowOpera
         logger.debug("Publishing of mediapackage {} completed", mediaPackage);
         return createResult(mediaPackage, Action.CONTINUE);
       } catch (MalformedURLException e) {
-        logger.error("{} is malformed: {}", ENGAGE_URL_PROPERTY, engageUrlString);
+        logger.error("{} is malformed URL: {}", ENGAGE_PLAYER_URL_PROPERTY, engagePlayerURLTemplate);
         throw new WorkflowOperationException(e);
       } catch (Throwable t) {
         if (t instanceof WorkflowOperationException) {
@@ -517,12 +505,14 @@ public class PublishEngageWorkflowOperationHandler extends AbstractWorkflowOpera
   /**
    * Local utility to assemble player path for this class
    *
-   * @param engageUri
+   * @param engagePlayerURLTemplate
    * @param mp
    * @return the assembled player URI for this mediapackage
    */
-  URI createEngageUri(URI engageUri, MediaPackage mp) {
-    return URIUtils.resolve(engageUri, PLAYER_PATH + mp.getIdentifier().toString());
+  URI createEngageUri(String engagePlayerURLTemplate, MediaPackage mp) throws MalformedURLException,
+          URISyntaxException {
+    String playerURLString = engagePlayerURLTemplate.replace(EVENT_ID_TEMPLATE_KEY, mp.getIdentifier().toString());
+    return new URL(playerURLString).toURI();
   }
 
   /**
