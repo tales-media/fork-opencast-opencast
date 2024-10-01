@@ -168,7 +168,6 @@ public class SegmentPreviewsWorkflowOperationHandler extends AbstractWorkflowOpe
     } catch (Exception e) {
       throw new WorkflowOperationException(e);
     }
-
   }
 
   /**
@@ -193,7 +192,7 @@ public class SegmentPreviewsWorkflowOperationHandler extends AbstractWorkflowOpe
     // Read the configuration properties
     ConfiguredTagsAndFlavors tagsAndFlavors = getTagsAndFlavors(wi,
         Configuration.many, Configuration.many, Configuration.many, Configuration.one);
-    MediaPackageElementFlavor sourceVideoFlavor = tagsAndFlavors.getSingleSrcFlavor();
+    List<MediaPackageElementFlavor> sourceVideoFlavors = tagsAndFlavors.getSrcFlavors();
     List<String> sourceTagSet = tagsAndFlavors.getSrcTags();
     List<String> targetImageTags = tagsAndFlavors.getTargetTags();
     MediaPackageElementFlavor targetImageFlavor = tagsAndFlavors.getSingleTargetFlavor();
@@ -208,7 +207,9 @@ public class SegmentPreviewsWorkflowOperationHandler extends AbstractWorkflowOpe
 
     // Select the tracks based on the tags and flavors
     TrackSelector trackSelector = new TrackSelector();
-    trackSelector.addFlavor(sourceVideoFlavor);
+    for (MediaPackageElementFlavor flavor : sourceVideoFlavors) {
+      trackSelector.addFlavor(flavor);
+    }
     for (String tag : sourceTagSet) {
       trackSelector.addTag(tag);
     }
@@ -221,9 +222,9 @@ public class SegmentPreviewsWorkflowOperationHandler extends AbstractWorkflowOpe
       }
     }
 
-    if (videoTrackSet.size() == 0) {
+    if (videoTrackSet.isEmpty()) {
       logger.debug("Mediapackage {} has no suitable tracks to extract images based on tags {} and flavor {}",
-              mediaPackage, sourceTagSet, sourceVideoFlavor);
+              mediaPackage, sourceTagSet, sourceVideoFlavors);
       return createResult(mediaPackage, Action.CONTINUE);
     } else {
 
@@ -266,7 +267,7 @@ public class SegmentPreviewsWorkflowOperationHandler extends AbstractWorkflowOpe
         MediaPackageElement referenceMaster = getReferenceMaster(mediaPackage, t, referenceFlavor, referenceTagSet);
 
         // Create the preview images according to the mpeg7 segments
-        if (t.hasVideo() && mpeg7 != null) {
+        if (t.hasVideo()) {
 
           Iterator<? extends Segment> segmentIterator = decomposition.segments();
 
@@ -408,5 +409,4 @@ public class SegmentPreviewsWorkflowOperationHandler extends AbstractWorkflowOpe
       IOUtils.closeQuietly(in);
     }
   }
-
 }
