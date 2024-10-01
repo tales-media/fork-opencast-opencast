@@ -524,7 +524,7 @@ public class ComposerServiceImpl extends AbstractJobProducer implements Composer
 
         var tagsForUrl = new ArrayList<String>();
         for (final String tag : tags) {
-          if (encodedFileName.endsWith(profile.getSuffix(tag))) {
+          if (encodedFileName.endsWith(profile.getSuffix(tag)) && !"default".equals(tag)) {
             tagsForUrl.add(tag);
           }
         }
