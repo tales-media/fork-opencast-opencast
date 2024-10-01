@@ -165,14 +165,14 @@ final class WorkflowOperationWorker {
     // Update execution condition and metadata
     final var organization = service.securityService.getOrganization();
     final Function<String, String> variables = key -> {
+      if (key.startsWith("org_") && StringUtils.isNotBlank(organization.getProperties().get(key.substring(4)))) {
+        return organization.getProperties().get(key.substring(4));
+      }
       if (properties != null && properties.containsKey(key) && StringUtils.isNotBlank(properties.get(key))) {
         return properties.get(key);
       }
       if (workflow.getConfigurations().containsKey(key) && StringUtils.isNotBlank(workflow.getConfiguration(key))) {
         return workflow.getConfiguration(key);
-      }
-      if (key.startsWith("org_") && StringUtils.isNotBlank(organization.getProperties().get(key.substring(4)))) {
-        return organization.getProperties().get(key.substring(4));
       }
       return null;
     };
