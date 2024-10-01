@@ -688,6 +688,9 @@
          "PROCESSING_CANCELLED": "Processing cancelled"
        },
        "STATE_MAPPING":{
+         "ARCHIVING": "Archiving",
+         "EDITING": "Editing",
+         "EXPORTING": "Exporting",
          "RETRACTING": "Retracting",
          "DELETING": "Deleting",
          "DUPLICATING": "Duplicating",

@@ -685,6 +685,9 @@
             "PROCESSING_CANCELLED": "Verarbeitung abgebrochen"
          },
          "STATE_MAPPING": {
+            "ARCHIVING": "Wird archiviert",
+            "EDITING": "Wird geschnitten",
+            "EXPORTING": "Wird exportiert",
             "RETRACTING": "Wird zurückgezogen",
             "DELETING": "Löschen",
             "DUPLICATING": "Wird dupliziert",
