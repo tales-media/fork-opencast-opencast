@@ -49,8 +49,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -183,6 +185,9 @@ public class WhisperCppEngine implements SpeechToTextEngine {
   /** Path to the executable */
   protected String ffmpegBinary = DEFAULT_FFMPEG_BINARY;
 
+  /** Map to get ISO 639 language code for 3-letter language code */
+  private Map<String, String> languageISO3to2Map = new HashMap<>();
+
   @Override
   public String getEngineName() {
     return engineName;
@@ -275,6 +280,13 @@ public class WhisperCppEngine implements SpeechToTextEngine {
 
     ffmpegBinary = Objects.toString(cc.getBundleContext().getProperty(FFMPEG_BINARY_CONFIG_KEY), DEFAULT_FFMPEG_BINARY);
     logger.debug("ffmpeg binary set to {}", ffmpegBinary);
+
+    String[] languageCodes = Locale.getISOLanguages();
+    for (String languageCode: languageCodes) {
+      Locale locale = new Locale(languageCode);
+      String languageISO3 = locale.getISO3Language();
+      languageISO3to2Map.put(languageISO3, languageCode);
+    }
 
     logger.debug("Finished activating/updating speech-to-text service");
   }
@@ -370,6 +382,14 @@ public class WhisperCppEngine implements SpeechToTextEngine {
     }
 
     String subtitleLanguage;
+
+    // map 3-letter language code to 2-letter language code
+    if (!language.isBlank()) {
+      language = languageISO3to2Map.getOrDefault(language,"");
+      if (language.isBlank()) {
+        logger.warn("No 2-letter language code found, using language auto detection");
+      }
+    }
 
     // set language of the source audio if known
     if (!language.isBlank()) {
