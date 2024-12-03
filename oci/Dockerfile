@@ -67,6 +67,7 @@ RUN apt-get update \
       gosu \
       inotify-tools \
       jq \
+      libgomp1 \
       netcat-openbsd \
       openssl \
       rsync \
@@ -101,6 +102,8 @@ RUN if [ "${OPENCAST_DISTRIBUTION}" = "tales-media-allinone" ]; then \
   \
  && javac "${OPENCAST_SCRIPTS}/TryToConnectToDb.java" \
  && rm -rf /tmp/* "${OPENCAST_SCRIPTS}/TryToConnectToDb.java"
+
+RUN whisper.cpp-model-download small
 
 WORKDIR "${OPENCAST_HOME}"
 
