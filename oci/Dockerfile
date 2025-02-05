@@ -4,9 +4,9 @@ ARG FFMPEG_VERSION="latest"
 FROM rg.nl-ams.scw.cloud/shio-solutions/tales-media/fork/ffmpeg:${FFMPEG_VERSION} as build-ffmpeg
 
 
-FROM --platform=${BUILDPLATFORM}  docker.io/library/eclipse-temurin:17-jdk AS base-build
-FROM --platform=${TARGETPLATFORM} docker.io/library/eclipse-temurin:17-jre AS base-target
-LABEL org.opencontainers.image.base.name="docker.io/library/eclipse-temurin:17-jre"
+FROM --platform=${BUILDPLATFORM}  docker.io/library/eclipse-temurin:21-jdk AS base-build
+FROM --platform=${TARGETPLATFORM} docker.io/library/eclipse-temurin:21-jre AS base-target
+LABEL org.opencontainers.image.base.name="docker.io/library/eclipse-temurin:21-jre"
 
 FROM base-target AS base-default-runtime
 FROM base-default-runtime AS base-default-dev
