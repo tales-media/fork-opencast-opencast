@@ -1,7 +1,7 @@
 ARG IMAGE_BASE=default
 
 ARG FFMPEG_VERSION="latest"
-FROM rg.nl-ams.scw.cloud/shio-solutions/tales-media/fork/ffmpeg:${FFMPEG_VERSION} as build-ffmpeg
+FROM rg.nl-ams.scw.cloud/shio-solutions/tales-media/fork/ffmpeg:${FFMPEG_VERSION} AS build-ffmpeg
 
 
 FROM --platform=${BUILDPLATFORM}  docker.io/library/eclipse-temurin:21-jdk AS base-build
@@ -106,9 +106,13 @@ RUN mkdir -p out \
  && mv models/download-ggml-model.sh out/whisper.cpp-model-download
 
 
-FROM scratch AS build-opencast
+FROM base-build AS build-opencast
+ENV OPENCAST_HOME    "/opencast"
+ENV OPENCAST_SCRIPTS "${OPENCAST_HOME}/docker/scripts"
 ARG OPENCAST_DISTRIBUTION
 ADD build/opencast-dist-${OPENCAST_DISTRIBUTION}-*.tar.gz /
+COPY oci/rootfs /
+RUN javac "${OPENCAST_SCRIPTS}/TryToConnectToDb.java"
 
 
 FROM base-runtime
@@ -158,10 +162,11 @@ RUN apt-get update \
       xmlstarlet \
  && rm -rf /var/lib/apt/lists/*
 
-COPY --from=build-ffmpeg       /usr/local/bin/ff*      /usr/local/bin/
+COPY --from=build-ffmpeg       /ff*                    /usr/local/bin/
 COPY --from=build-whisper-cpp  /tmp/whisper.cpp/out/*  /usr/local/bin/
 COPY --from=build-opencast     opencast-dist-*         "${OPENCAST_HOME}"
 COPY oci/rootfs /
+COPY --from=build-opencast     "${OPENCAST_SCRIPTS}/TryToConnectToDb.class"  "${OPENCAST_SCRIPTS}/"
 
 ARG OPENCAST_REPO="https://github.com/tales-media/fork-opencast-opencast.git"
 ARG OPENCAST_DISTRIBUTION
@@ -183,7 +188,6 @@ RUN if [ "${OPENCAST_DISTRIBUTION}" = "tales-media-allinone" ]; then \
  && mkdir -p "${OPENCAST_STAGE_BASE_HOME}" \
  && rsync -vrlog --chown=0:0 "${OPENCAST_CONFIG}" "${OPENCAST_STAGE_BASE_HOME}" \
   \
- && javac "${OPENCAST_SCRIPTS}/TryToConnectToDb.java" \
  && rm -rf /tmp/* "${OPENCAST_SCRIPTS}/TryToConnectToDb.java"
 
 RUN whisper.cpp-model-download small
