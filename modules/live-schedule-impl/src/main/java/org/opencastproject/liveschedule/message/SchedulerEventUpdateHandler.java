@@ -65,7 +65,7 @@ public class SchedulerEventUpdateHandler extends UpdateHandler implements Schedu
   /**
    * OSGi callback on component activation.
    *
-   * @param context
+   * @param cc
    *          the component context
    */
   @Activate

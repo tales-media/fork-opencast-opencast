@@ -43,7 +43,6 @@
     <jackson.version>2.17.2</jackson.version>
     <jakarta.mail.version>1.6.7</jakarta.mail.version>
     <java.release>21</java.release>
-    <javadoc-plugin.version>3.3.1</javadoc-plugin.version>
     <jersey.version>2.29.1</jersey.version>
     <jettison.version>1.5.4</jettison.version>
     <joda-time.version>2.12.7</joda-time.version>
@@ -503,7 +502,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <!-- NOTE: this should match the settings for the reporting plugin below -->
-          <version>$(javadoc-plugin.version}</version>
+          <version>3.11.1</version>
           <configuration>
             <detectJavaApiLink>true</detectJavaApiLink>
             <maxmemory>512m</maxmemory>
@@ -717,7 +716,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>${javadoc-plugin.version}</version>
             <executions>
               <execution>
                 <id>attach-javadocs</id>
@@ -1391,7 +1389,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>${javadoc-plugin.version}</version>
         <configuration>
           <detectJavaApiLink>true</detectJavaApiLink>
           <maxmemory>512m</maxmemory>
