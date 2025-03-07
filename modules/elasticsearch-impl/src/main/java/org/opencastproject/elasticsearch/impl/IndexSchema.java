@@ -30,8 +30,14 @@ public interface IndexSchema {
   /** Version field name */
   String VERSION = "version";
 
+  /** Extension for fuzzy field names */
+  String FUZZY_FIELDNAME_EXTENSION = "_fuzzy";
+
   /** Accumulative text field */
   String TEXT = "text";
+
+  /** Accumulative text field with analysis targeted for fuzzy search */
+  String TEXT_FUZZY = "text" + FUZZY_FIELDNAME_EXTENSION;
 
   /** Extension for sort field names */
   String SORT_FIELD_NAME_EXTENSION = ".sort";

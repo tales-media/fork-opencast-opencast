@@ -22,6 +22,7 @@
 package org.opencastproject.elasticsearch.impl;
 
 import static org.opencastproject.elasticsearch.impl.IndexSchema.TEXT;
+import static org.opencastproject.elasticsearch.impl.IndexSchema.TEXT_FUZZY;
 
 import org.opencastproject.elasticsearch.api.SearchQuery;
 import org.opencastproject.util.DateTimeSupport;
@@ -29,16 +30,15 @@ import org.opencastproject.util.DateTimeSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.search.Query;
 import org.elasticsearch.common.io.stream.StreamOutput;
-import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchAllQueryBuilder;
-import org.elasticsearch.index.query.MultiMatchQueryBuilder;
-import org.elasticsearch.index.query.Operator;
+import org.elasticsearch.index.query.MoreLikeThisQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryRewriteContext;
 import org.elasticsearch.index.query.QueryShardContext;
+import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
 
@@ -73,13 +73,11 @@ public abstract class AbstractElasticsearchQueryBuilder<T extends SearchQuery> i
   /** Text query */
   protected String text = null;
 
-  protected List<String> additionalMultiQueryFields = new ArrayList<>();
-
   /** Fuzzy text query */
-  protected boolean fuzzy = false;
+  protected String fuzzyText = null;
 
   /** The original search query */
-  private final T query;
+  private T query;
 
   /** The boolean query */
   private QueryBuilder queryBuilder = null;
@@ -121,7 +119,7 @@ public abstract class AbstractElasticsearchQueryBuilder<T extends SearchQuery> i
     // Terms
     if (searchTerms != null) {
       for (Map.Entry<String, Set<Object>> entry : searchTerms.entrySet()) {
-        booleanQuery.filter(new TermsQueryBuilder(entry.getKey(), entry.getValue().toArray(new Object[0])));
+        booleanQuery.must(new TermsQueryBuilder(entry.getKey(), entry.getValue().toArray(new Object[0])));
       }
       this.queryBuilder = booleanQuery;
     }
@@ -136,16 +134,18 @@ public abstract class AbstractElasticsearchQueryBuilder<T extends SearchQuery> i
 
     // Text
     if (text != null) {
-      MultiMatchQueryBuilder queryBuilder = QueryBuilders.multiMatchQuery(text);
-      queryBuilder.field(TEXT, 1.2f);
-      additionalMultiQueryFields.forEach(field -> queryBuilder.field(field, 1.0f));
-      queryBuilder.type(MultiMatchQueryBuilder.Type.BEST_FIELDS);
-      queryBuilder.operator(Operator.AND);
-      if (fuzzy) {
-        queryBuilder.fuzziness(Fuzziness.AUTO);
-      }
-      booleanQuery.minimumShouldMatch(1);
-      booleanQuery.should(queryBuilder);
+      QueryStringQueryBuilder queryBuilder = QueryBuilders.queryStringQuery(text).field(TEXT);
+      booleanQuery.must(queryBuilder);
+      this.queryBuilder = booleanQuery;
+    }
+
+    // Fuzzy text
+    if (fuzzyText != null) {
+      MoreLikeThisQueryBuilder moreLikeThisQueryBuilder = QueryBuilders.moreLikeThisQuery(
+              new String[] {TEXT_FUZZY},
+              new String[] {fuzzyText},
+              null);
+      booleanQuery.must(moreLikeThisQueryBuilder);
       this.queryBuilder = booleanQuery;
     }
 

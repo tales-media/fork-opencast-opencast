@@ -46,7 +46,6 @@ import com.google.gson.Gson;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -341,9 +340,9 @@ public class SearchRestService extends AbstractJobProducerEndpoint {
     List<String> series = Collections.emptyList();
     if (StringUtils.isNotEmpty(seriesName)) {
       var seriesSearchSource = new SearchSourceBuilder().query(QueryBuilders.boolQuery()
-          .filter(QueryBuilders.termQuery(SearchResult.ORG, org))
-          .filter(QueryBuilders.termQuery(SearchResult.TYPE, SearchService.IndexEntryType.Series))
-          .filter(QueryBuilders.termQuery(SearchResult.DUBLINCORE + ".title", seriesName))
+          .must(QueryBuilders.termQuery(SearchResult.ORG, org))
+          .must(QueryBuilders.termQuery(SearchResult.TYPE, SearchService.IndexEntryType.Series))
+          .must(QueryBuilders.termQuery(SearchResult.DUBLINCORE + ".title", seriesName))
           .mustNot(QueryBuilders.existsQuery(SearchResult.DELETED_DATE)));
       series = searchService.search(seriesSearchSource).getHits().stream()
           .map(h -> h.getDublinCore().getFirst(DublinCore.PROPERTY_IDENTIFIER))
@@ -355,12 +354,12 @@ public class SearchRestService extends AbstractJobProducerEndpoint {
     }
 
     var query = QueryBuilders.boolQuery()
-        .filter(QueryBuilders.termQuery(SearchResult.ORG, org))
-        .filter(QueryBuilders.termQuery(SearchResult.TYPE, type))
+        .must(QueryBuilders.termQuery(SearchResult.ORG, org))
+        .must(QueryBuilders.termQuery(SearchResult.TYPE, type))
         .mustNot(QueryBuilders.existsQuery(SearchResult.DELETED_DATE));
 
     if (StringUtils.isNotEmpty(id)) {
-      query.filter(QueryBuilders.idsQuery().addIds(id));
+      query.must(QueryBuilders.idsQuery().addIds(id));
     }
 
     if (StringUtils.isNotEmpty(seriesId)) {
@@ -379,12 +378,7 @@ public class SearchRestService extends AbstractJobProducerEndpoint {
     }
 
     if (StringUtils.isNotEmpty(text)) {
-      query.minimumShouldMatch(1);
-      query.should(
-          QueryBuilders.matchQuery("fulltext", text)
-              .fuzziness("AUTO")
-              .operator(Operator.AND)
-      );
+      query.must(QueryBuilders.matchQuery("fulltext", text));
     }
 
     var user = securityService.getUser();

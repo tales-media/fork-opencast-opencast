@@ -150,12 +150,11 @@ public class SeriesQueryBuilder extends AbstractElasticsearchQueryBuilder<Series
           }
           queryText.append(term);
         }
-
-        additionalMultiQueryFields.add(SeriesIndexSchema.UID);
-
-        fuzzy = query.isFuzzySearch();
-        this.text = queryText.toString();
-
+        if (query.isFuzzySearch()) {
+          fuzzyText = queryText.toString();
+        } else {
+          this.text = queryText.toString();
+        }
         if (Quantifier.All.equals(terms.getQuantifier())) {
           if (groups == null) {
             groups = new ArrayList<ValueGroup>();

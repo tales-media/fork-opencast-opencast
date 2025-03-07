@@ -270,14 +270,11 @@ public class EventQueryBuilder extends AbstractElasticsearchQueryBuilder<EventSe
           }
           queryText.append(term);
         }
-
-        additionalMultiQueryFields.add(EventIndexSchema.UID);
-        additionalMultiQueryFields.add(EventIndexSchema.SERIES_ID);
-
-        fuzzy = query.isFuzzySearch();
-
-        this.text = queryText.toString();
-
+        if (query.isFuzzySearch()) {
+          fuzzyText = queryText.toString();
+        } else {
+          this.text = queryText.toString();
+        }
         if (Quantifier.All.equals(terms.getQuantifier())) {
           if (groups == null) {
             groups = new ArrayList<>();
