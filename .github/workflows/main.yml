@@ -19,7 +19,7 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     container:
-      image: rg.nl-ams.scw.cloud/shio-solutions/infra/build-opencast:1
+      image: rg.nl-ams.scw.cloud/shio-solutions/infra/build-opencast:1.1
       credentials:
         username: nologin
         password: ${{ secrets.SCW_SECRET_KEY }}
