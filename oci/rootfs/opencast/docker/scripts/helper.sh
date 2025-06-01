@@ -28,6 +28,22 @@ opencast_helper_dist_admin() {
   test "${OPENCAST_DISTRIBUTION}" = "tales-media-controller"
 }
 
+opencast_helper_dist_adminpresentation() {
+  test "${OPENCAST_DISTRIBUTION}" = "tales-media-controller"
+}
+
+opencast_helper_dist_presentation() {
+  test "${OPENCAST_DISTRIBUTION}" = "tales-media-controller"
+}
+
+opencast_helper_dist_worker() {
+  test "${OPENCAST_DISTRIBUTION}" = "tales-media-worker"
+}
+
+opencast_helper_dist_ingest() {
+  test "${OPENCAST_DISTRIBUTION}" = "tales-media-controller"
+}
+
 opencast_helper_customconfig() {
   test -d "${OPENCAST_CUSTOM_CONFIG}"
 }

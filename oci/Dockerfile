@@ -16,9 +16,9 @@ FROM base-default-runtime AS base-default-dev
 #   https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/12.4.1/ubuntu2204/runtime/Dockerfile
 # BSD-3-Clause License: https://gitlab.com/nvidia/container-images/cuda/-/blob/master/LICENSE
 FROM base-target AS base-nvidia-cuda-runtime-amd64
-ENV NVARCH x86_64
+ENV NVARCH=x86_64
 FROM base-target AS base-nvidia-cuda-runtime-arm64
-ENV NVARCH sbsa
+ENV NVARCH=sbsa
 FROM base-nvidia-cuda-runtime-${TARGETARCH} AS base-nvidia-cuda-runtime
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
@@ -42,12 +42,12 @@ RUN apt-get update \
       libnpp-12-4 \
  && rm -rf /var/lib/apt/lists/*
 
-ENV NVIDIA_REQUIRE_CUDA        "cuda>=12.4 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=geforce,driver>=470,driver<471 brand=geforcertx,driver>=470,driver<471 brand=quadro,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=titan,driver>=470,driver<471 brand=titanrtx,driver>=470,driver<471 brand=tesla,driver>=525,driver<526 brand=unknown,driver>=525,driver<526 brand=nvidia,driver>=525,driver<526 brand=nvidiartx,driver>=525,driver<526 brand=geforce,driver>=525,driver<526 brand=geforcertx,driver>=525,driver<526 brand=quadro,driver>=525,driver<526 brand=quadrortx,driver>=525,driver<526 brand=titan,driver>=525,driver<526 brand=titanrtx,driver>=525,driver<526 brand=tesla,driver>=535,driver<536 brand=unknown,driver>=535,driver<536 brand=nvidia,driver>=535,driver<536 brand=nvidiartx,driver>=535,driver<536 brand=geforce,driver>=535,driver<536 brand=geforcertx,driver>=535,driver<536 brand=quadro,driver>=535,driver<536 brand=quadrortx,driver>=535,driver<536 brand=titan,driver>=535,driver<536 brand=titanrtx,driver>=535,driver<536"
-ENV NVIDIA_VISIBLE_DEVICES     "all"
-ENV NVIDIA_DRIVER_CAPABILITIES "compute,utility"
+ENV NVIDIA_REQUIRE_CUDA="cuda>=12.4 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=geforce,driver>=470,driver<471 brand=geforcertx,driver>=470,driver<471 brand=quadro,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=titan,driver>=470,driver<471 brand=titanrtx,driver>=470,driver<471 brand=tesla,driver>=525,driver<526 brand=unknown,driver>=525,driver<526 brand=nvidia,driver>=525,driver<526 brand=nvidiartx,driver>=525,driver<526 brand=geforce,driver>=525,driver<526 brand=geforcertx,driver>=525,driver<526 brand=quadro,driver>=525,driver<526 brand=quadrortx,driver>=525,driver<526 brand=titan,driver>=525,driver<526 brand=titanrtx,driver>=525,driver<526 brand=tesla,driver>=535,driver<536 brand=unknown,driver>=535,driver<536 brand=nvidia,driver>=535,driver<536 brand=nvidiartx,driver>=535,driver<536 brand=geforce,driver>=535,driver<536 brand=geforcertx,driver>=535,driver<536 brand=quadro,driver>=535,driver<536 brand=quadrortx,driver>=535,driver<536 brand=titan,driver>=535,driver<536 brand=titanrtx,driver>=535,driver<536"
+ENV NVIDIA_VISIBLE_DEVICES="all"
+ENV NVIDIA_DRIVER_CAPABILITIES="compute,utility"
 
-ENV PATH            "/usr/local/cuda/bin:${PATH}"
-ENV LD_LIBRARY_PATH "/usr/local/cuda/lib:/usr/local/cuda/lib64:/usr/local/cuda/compat:${LD_LIBRARY_PATH}"
+ENV PATH="/usr/local/cuda/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/usr/local/cuda/lib:/usr/local/cuda/lib64:/usr/local/cuda/compat:${LD_LIBRARY_PATH}"
 
 
 # Adapted from: https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/12.4.1/ubuntu2204/devel/Dockerfile
@@ -67,7 +67,7 @@ RUN apt-get update \
       libnpp-dev-12-4 \
  && rm -rf /var/lib/apt/lists/*
 
-ENV LIBRARY_PATH /usr/local/cuda/lib64/stubs:/usr/local/cuda/compat
+ENV LIBRARY_PATH=/usr/local/cuda/lib64/stubs:/usr/local/cuda/compat
 
 
 FROM base-${IMAGE_BASE}-runtime AS base-runtime
@@ -106,30 +106,34 @@ RUN mkdir -p out \
  && mv models/download-ggml-model.sh out/whisper.cpp-model-download
 
 
-FROM base-build AS build-opencast
-ENV OPENCAST_HOME    "/opencast"
-ENV OPENCAST_SCRIPTS "${OPENCAST_HOME}/docker/scripts"
+FROM scratch AS build-opencast
 ARG OPENCAST_DISTRIBUTION
 ADD build/opencast-dist-${OPENCAST_DISTRIBUTION}-*.tar.gz /
-COPY oci/rootfs /
-RUN javac "${OPENCAST_SCRIPTS}/TryToConnectToDb.java"
+
+
+FROM --platform=${BUILDPLATFORM} base-build AS build-rootfs
+ENV OPENCAST_HOME="/rootfs/opencast"
+ENV OPENCAST_SCRIPTS="${OPENCAST_HOME}/docker/scripts"
+COPY oci/rootfs /rootfs
+RUN javac "${OPENCAST_SCRIPTS}/TryToConnectToDb.java" \
+ && rm -rf "${OPENCAST_SCRIPTS}/TryToConnectToDb.java"
 
 
 FROM base-runtime
 
-ENV OPENCAST_HOME            "/opencast"
-ENV OPENCAST_DATA            "/data"
-ENV OPENCAST_CUSTOM_CONFIG   "/etc/opencast"
-ENV OPENCAST_USER            "opencast"
-ENV OPENCAST_GROUP           "opencast"
-ENV OPENCAST_UHOME           "/home/opencast"
-ENV OPENCAST_UID             "800"
-ENV OPENCAST_GID             "800"
-ENV WHISPER_CPP_MODELS       "/usr/share/whisper.cpp/models"
-ENV OPENCAST_CONFIG          "${OPENCAST_HOME}/etc"
-ENV OPENCAST_SCRIPTS         "${OPENCAST_HOME}/docker/scripts"
-ENV OPENCAST_STAGE_BASE_HOME "${OPENCAST_HOME}/docker/stage/base"
-ENV OPENCAST_STAGE_OUT_HOME  "${OPENCAST_HOME}/docker/stage/out"
+ENV OPENCAST_HOME="/opencast"
+ENV OPENCAST_DATA="/data"
+ENV OPENCAST_CUSTOM_CONFIG="/etc/opencast"
+ENV OPENCAST_USER="opencast"
+ENV OPENCAST_GROUP="opencast"
+ENV OPENCAST_UHOME="/home/opencast"
+ENV OPENCAST_UID="800"
+ENV OPENCAST_GID="800"
+ENV WHISPER_CPP_MODELS="/usr/share/whisper.cpp/models"
+ENV OPENCAST_CONFIG="${OPENCAST_HOME}/etc"
+ENV OPENCAST_SCRIPTS="${OPENCAST_HOME}/docker/scripts"
+ENV OPENCAST_STAGE_BASE_HOME="${OPENCAST_HOME}/docker/stage/base"
+ENV OPENCAST_STAGE_OUT_HOME="${OPENCAST_HOME}/docker/stage/out"
 
 RUN groupadd --system -g "${OPENCAST_GID}" "${OPENCAST_GROUP}" \
  && useradd --system -M -N -g "${OPENCAST_GROUP}" -d "${OPENCAST_UHOME}" -u "${OPENCAST_UID}" "${OPENCAST_USER}" \
@@ -164,9 +168,8 @@ RUN apt-get update \
 
 COPY --from=build-ffmpeg       /ff*                    /usr/local/bin/
 COPY --from=build-whisper-cpp  /tmp/whisper.cpp/out/*  /usr/local/bin/
-COPY --from=build-opencast     opencast-dist-*         "${OPENCAST_HOME}"
-COPY oci/rootfs /
-COPY --from=build-opencast     "${OPENCAST_SCRIPTS}/TryToConnectToDb.class"  "${OPENCAST_SCRIPTS}/"
+COPY --from=build-opencast     /opencast-dist-*        "${OPENCAST_HOME}"
+COPY --from=build-rootfs       /rootfs                 /
 
 ARG OPENCAST_REPO="https://github.com/tales-media/fork-opencast-opencast.git"
 ARG OPENCAST_DISTRIBUTION
@@ -174,9 +177,9 @@ ARG VERSION=unkown
 ARG BUILD_DATE=unkown
 ARG GIT_COMMIT=unkown
 
-ENV OPENCAST_REPO         "${OPENCAST_REPO}"
-ENV OPENCAST_VERSION      "${VERSION}"
-ENV OPENCAST_DISTRIBUTION "${OPENCAST_DISTRIBUTION}"
+ENV OPENCAST_REPO="${OPENCAST_REPO}"
+ENV OPENCAST_VERSION="${VERSION}"
+ENV OPENCAST_DISTRIBUTION="${OPENCAST_DISTRIBUTION}"
 
 RUN if [ "${OPENCAST_DISTRIBUTION}" = "tales-media-allinone" ]; then \
       rm -f "${OPENCAST_CONFIG}/org.opencastproject.organization-mh_default_org.cfg-clustered"; \
@@ -188,7 +191,7 @@ RUN if [ "${OPENCAST_DISTRIBUTION}" = "tales-media-allinone" ]; then \
  && mkdir -p "${OPENCAST_STAGE_BASE_HOME}" \
  && rsync -vrlog --chown=0:0 "${OPENCAST_CONFIG}" "${OPENCAST_STAGE_BASE_HOME}" \
   \
- && rm -rf /tmp/* "${OPENCAST_SCRIPTS}/TryToConnectToDb.java"
+ && rm -rf /tmp/*
 
 RUN whisper.cpp-model-download small
 
