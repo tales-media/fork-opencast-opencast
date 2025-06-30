@@ -17,31 +17,31 @@
 set -e
 
 opencast_helper_dist_allinone() {
-  test "${OPENCAST_DISTRIBUTION}" = "allinone"
+  test "${OPENCAST_DISTRIBUTION}" = "tales-media-allinone"
 }
 
 opencast_helper_dist_develop() {
-  test "${OPENCAST_DISTRIBUTION}" = "develop"
+  test "${OPENCAST_DISTRIBUTION}" = "tales-media-develop"
 }
 
 opencast_helper_dist_admin() {
-  test "${OPENCAST_DISTRIBUTION}" = "admin"
+  test "${OPENCAST_DISTRIBUTION}" = "tales-media-controller"
 }
 
 opencast_helper_dist_adminpresentation() {
-  test "${OPENCAST_DISTRIBUTION}" = "adminpresentation"
+  test "${OPENCAST_DISTRIBUTION}" = "tales-media-controller"
 }
 
 opencast_helper_dist_presentation() {
-  test "${OPENCAST_DISTRIBUTION}" = "presentation"
+  test "${OPENCAST_DISTRIBUTION}" = "tales-media-controller"
 }
 
 opencast_helper_dist_worker() {
-  test "${OPENCAST_DISTRIBUTION}" = "worker"
+  test "${OPENCAST_DISTRIBUTION}" = "tales-media-worker"
 }
 
 opencast_helper_dist_ingest() {
-  test "${OPENCAST_DISTRIBUTION}" = "ingest"
+  test "${OPENCAST_DISTRIBUTION}" = "tales-media-controller"
 }
 
 opencast_helper_customconfig() {

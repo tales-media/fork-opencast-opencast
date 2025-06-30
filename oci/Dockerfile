@@ -1,11 +1,8 @@
 ARG IMAGE_BASE=default
-
 ARG FFMPEG_VERSION="latest"
-FROM rg.nl-ams.scw.cloud/shio-solutions/tales-media/fork/ffmpeg:${FFMPEG_VERSION} AS build-ffmpeg
-
 
 FROM --platform=${BUILDPLATFORM}  docker.io/library/eclipse-temurin:21-jdk AS base-build
-FROM --platform=${TARGETPLATFORM} docker.io/library/eclipse-temurin:21-jre AS base-target
+FROM                              docker.io/library/eclipse-temurin:21-jre AS base-target
 LABEL org.opencontainers.image.base.name="docker.io/library/eclipse-temurin:21-jre"
 
 FROM base-target AS base-default-runtime
@@ -74,8 +71,14 @@ FROM base-${IMAGE_BASE}-runtime AS base-runtime
 FROM base-${IMAGE_BASE}-dev AS base-dev
 
 
+FROM rg.nl-ams.scw.cloud/shio-solutions/tales-media/fork/ffmpeg:${FFMPEG_VERSION} AS ffmpeg-pre
+FROM scratch AS build-ffmpeg
+COPY --from=ffmpeg-pre --chown=0:0 /ff* /rootfs/usr/local/bin/
+
+
 FROM base-dev AS build-whisper-cpp
 ARG WHISPER_CPP_VERSION="master"
+ENV WHISPER_CPP_MODELS="/usr/share/whisper.cpp/models"
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       ccache \
@@ -100,21 +103,27 @@ RUN cmake -B build \
       -DWHISPER_BUILD_SERVER=OFF \
       -DWHISPER_BUILD_TESTS=OFF \
  && cmake --build build --config Release -j $(nproc) \
- && sed -i 's#models_path=.*$#models_path=/usr/share/whisper.cpp/models/#' models/download-ggml-model.sh
-RUN mkdir -p out \
- && mv build/bin/whisper-cli         out/whisper.cpp \
- && mv models/download-ggml-model.sh out/whisper.cpp-model-download
+ && sed -i "s#models_path=.*\$#models_path=${WHISPER_CPP_MODELS}/#" models/download-ggml-model.sh \
+ && sed -i "s#models_path=.*\$#models_path=${WHISPER_CPP_MODELS}/#" models/download-vad-model.sh
+RUN mkdir -p /rootfs/usr/local/bin /rootfs/usr/local/sbin \
+ && mv build/bin/whisper-*           /rootfs/usr/local/bin/ \
+ && mv models/download-ggml-model.sh /rootfs/usr/local/sbin/whisper-ggml-model-download \
+ && mv models/download-vad-model.sh  /rootfs/usr/local/sbin/whisper-download-vad-model
 
 
-FROM scratch AS build-opencast
+FROM scratch AS build-opencast-pre
 ARG OPENCAST_DISTRIBUTION
 ADD build/opencast-dist-${OPENCAST_DISTRIBUTION}-*.tar.gz /
+FROM scratch AS build-opencast
+ENV OPENCAST_HOME="/rootfs/opencast"
+COPY --from=build-opencast-pre --chown=0:0 /opencast-dist-* "${OPENCAST_HOME}"
 
 
 FROM --platform=${BUILDPLATFORM} base-build AS build-rootfs
 ENV OPENCAST_HOME="/rootfs/opencast"
 ENV OPENCAST_SCRIPTS="${OPENCAST_HOME}/docker/scripts"
-COPY oci/rootfs /rootfs
+COPY oci/rootfs           /rootfs
+COPY oci/rootfs-override  /rootfs
 RUN javac "${OPENCAST_SCRIPTS}/TryToConnectToDb.java" \
  && rm -rf "${OPENCAST_SCRIPTS}/TryToConnectToDb.java"
 
@@ -166,10 +175,11 @@ RUN apt-get update \
       xmlstarlet \
  && rm -rf /var/lib/apt/lists/*
 
-COPY --from=build-ffmpeg       /ff*                    /usr/local/bin/
-COPY --from=build-whisper-cpp  /tmp/whisper.cpp/out/*  /usr/local/bin/
-COPY --from=build-opencast     /opencast-dist-*        "${OPENCAST_HOME}"
-COPY --from=build-rootfs       /rootfs                 /
+COPY --from=build-ffmpeg       /rootfs  /
+COPY --from=build-whisper-cpp  /rootfs  /
+COPY --from=build-opencast     /rootfs  /
+COPY --from=build-rootfs       /rootfs  /
+COPY --from=build-rootfs       /rootfs  /
 
 ARG OPENCAST_REPO="https://github.com/tales-media/fork-opencast-opencast.git"
 ARG OPENCAST_DISTRIBUTION
@@ -193,7 +203,8 @@ RUN if [ "${OPENCAST_DISTRIBUTION}" = "tales-media-allinone" ]; then \
   \
  && rm -rf /tmp/*
 
-RUN whisper.cpp-model-download small
+RUN whisper-ggml-model-download small
+RUN whisper-download-vad-model silero-v5.1.2
 
 WORKDIR "${OPENCAST_HOME}"
 
