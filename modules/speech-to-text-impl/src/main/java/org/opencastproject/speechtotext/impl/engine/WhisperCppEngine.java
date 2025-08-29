@@ -367,7 +367,8 @@ public class WhisperCppEngine implements SpeechToTextEngine {
       logger.debug("WhisperC++ VAD samples overlap set to {}", whispercppVadSamplesOverlap);
     }
 
-    whispercppArgs = StringUtils.split(Objects.toString(cc.getProperties().get(WHISPERCPP_ARGS_CONFIG_KEY), ""));
+    whispercppArgs = Objects.toString(cc.getProperties().get(WHISPERCPP_ARGS_CONFIG_KEY), "").trim().split("\\s+");
+
     logger.debug("Additional args for WhisperC++: {}", (Object) whispercppArgs);
 
     autoEncode = BooleanUtils.toBoolean(Objects.toString(
