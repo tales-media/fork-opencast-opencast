@@ -327,7 +327,7 @@ public abstract class OaiPmhRepository implements ManagedService {
                      $eTxt("baseURL", OAI_NS, p.getRepositoryUrl()),
                      $eTxt("protocolVersion", OAI_NS, "2.0"),
                      $eTxt("adminEmail", OAI_NS, getAdminEmail()),
-                     $eTxt("earliestDatestamp", OAI_NS, "2010-01-01"),
+                     $eTxt("earliestDatestamp", OAI_NS, "2023-10-31"),
                      $eTxt("deletedRecord", OAI_NS, "transient"),
                      $eTxt("granularity", OAI_NS, toOaiRepresentation(getRepositoryTimeGranularity()))));
       }
