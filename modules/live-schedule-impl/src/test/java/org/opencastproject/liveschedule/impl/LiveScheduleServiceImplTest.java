@@ -105,7 +105,7 @@ public class LiveScheduleServiceImplTest {
   private static final String STREAM_NAME = "#{id}-#{caName}-#{flavor}-stream-#{resolution}_suffix";
   private static final long DURATION = 60000L;
   private static final String ORG_ID = "org";
-  private static final String ENGAGE_URL = "htttp://engage.server";
+  private static final String ENGAGE_PLAYER_URL = "http://engage.server/path/play/{{event_id}}?autoplay=true";
 
   /** The service to test */
   private LiveScheduleServiceImpl service;
@@ -156,7 +156,7 @@ public class LiveScheduleServiceImplTest {
 
     Organization defOrg = new DefaultOrganization();
     Map<String, String> orgProps = new HashMap<>();
-    orgProps.put(LiveScheduleServiceImpl.ENGAGE_URL_PROPERTY, ENGAGE_URL);
+    orgProps.put(LiveScheduleServiceImpl.ENGAGE_PLAYER_URL_PROPERTY, ENGAGE_PLAYER_URL);
     org = new JaxbOrganization(ORG_ID, "Test Organization", defOrg.getServers(), defOrg.getAdminRole(),
             defOrg.getAnonymousRole(), orgProps);
     EasyMock.expect(organizationService.getOrganization(ORG_ID)).andReturn(org).anyTimes();
@@ -584,7 +584,8 @@ public class LiveScheduleServiceImplTest {
     Assert.assertEquals(1, publications.length);
     Assert.assertEquals(LiveScheduleService.CHANNEL_ID, publications[0].getChannel());
     Assert.assertEquals("text/html", publications[0].getMimeType().toString());
-    Assert.assertEquals(ENGAGE_URL + "/play/" + MP_ID, publications[0].getURI().toString());
+    Assert.assertEquals("http://engage.server/path/play/c3d913f6-9af7-403a-91a9-33b73ee18193?autoplay=true",
+        publications[0].getURI().toString());
   }
 
   @Test
