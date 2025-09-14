@@ -116,6 +116,7 @@ public class AwsS3AssetStore extends AwsAbstractArchive implements RemoteAssetSt
   public static final String AWS_S3_MAX_CONNECTIONS = "org.opencastproject.assetmanager.aws.s3.max.connections";
   public static final String AWS_S3_CONNECTION_TIMEOUT = "org.opencastproject.assetmanager.aws.s3.connection.timeout";
   public static final String AWS_S3_MAX_RETRIES = "org.opencastproject.assetmanager.aws.s3.max.retries";
+  public static final String AWS_S3_GLACIER_TAG_MEDIA = "org.opencastproject.assetmanager.aws.s3.glacier.tag.media";
   public static final String AWS_GLACIER_RESTORE_DAYS = "org.opencastproject.assetmanager.aws.s3.glacier.restore.days";
 
   public static final Integer AWS_S3_GLACIER_RESTORE_DAYS_DEFAULT = 2;
@@ -139,6 +140,8 @@ public class AwsS3AssetStore extends AwsAbstractArchive implements RemoteAssetSt
   private String endpoint = null;
 
   private boolean pathStyle = false;
+
+  private boolean glacierTagMedia = true;
 
   /** The Glacier storage class, restore period **/
   private Integer restorePeriod;
@@ -215,6 +218,10 @@ public class AwsS3AssetStore extends AwsAbstractArchive implements RemoteAssetSt
 
       pathStyle = BooleanUtils.toBoolean(OsgiUtil.getComponentContextProperty(cc, AWS_S3_PATH_STYLE_CONFIG, "false"));
       logger.info("AWS path style is {}", pathStyle);
+
+      glacierTagMedia = BooleanUtils.toBoolean(OsgiUtil.getComponentContextProperty(cc, AWS_S3_GLACIER_TAG_MEDIA,
+          "true"));
+      logger.info("AWS Glacier tag media as freezable is {}", glacierTagMedia);
 
       // Glacier storage class restore period
       restorePeriod = OsgiUtil.getOptCfgAsInt(cc.getProperties(), AWS_GLACIER_RESTORE_DAYS)
@@ -337,10 +344,12 @@ public class AwsS3AssetStore extends AwsAbstractArchive implements RemoteAssetSt
           case "audio":
           case "image":
           case "video":
-            logger.debug("Tagging S3 object {} as Freezable", objectName);
-            List<Tag> tags = new ArrayList<>();
-            tags.add(freezable);
-            s3.setObjectTagging(new SetObjectTaggingRequest(bucketName, objectName, new ObjectTagging(tags)));
+            if (glacierTagMedia) {
+              logger.debug("Tagging S3 object {} as Freezable", objectName);
+              List<Tag> tags = new ArrayList<>();
+              tags.add(freezable);
+              s3.setObjectTagging(new SetObjectTaggingRequest(bucketName, objectName, new ObjectTagging(tags)));
+            }
             break;
           default:
             break;
