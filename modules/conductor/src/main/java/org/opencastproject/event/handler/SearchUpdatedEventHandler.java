@@ -153,7 +153,7 @@ public class SearchUpdatedEventHandler {
    * @param distributionService
    *          the distributionService to set
    */
-  @Reference(target = "(distribution.channel=download)")
+  @Reference(target = "(distribution.channel=aws.s3)")
   public void setDistributionService(DistributionService distributionService) {
     this.distributionService = distributionService;
   }

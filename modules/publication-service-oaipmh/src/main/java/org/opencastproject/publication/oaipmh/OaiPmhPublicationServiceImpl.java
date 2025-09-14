@@ -1115,7 +1115,7 @@ public class OaiPmhPublicationServiceImpl extends AbstractJobProducer implements
   }
 
   /** OSGI DI */
-  @Reference(target = "(distribution.channel=download)")
+  @Reference(target = "(distribution.channel=aws.s3)")
   public void setDownloadDistributionService(DownloadDistributionService downloadDistributionService) {
     this.downloadDistributionService = downloadDistributionService;
   }
