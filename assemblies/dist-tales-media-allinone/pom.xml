@@ -9,13 +9,11 @@
   </parent>
   <properties>
     <opencast.basedir>${project.basedir}/../..</opencast.basedir>
-    <packaging.definition>${project.basedir}/target/classes/package.xml</packaging.definition>
     <enableJobDispatching>true</enableJobDispatching>
-    <enableDeveloperMode>true</enableDeveloperMode>
   </properties>
-  <artifactId>opencast-dist-develop</artifactId>
+  <artifactId>opencast-dist-tales-media-allinone</artifactId>
   <packaging>karaf-assembly</packaging>
-  <name>Assemblies // Distribution Develop</name>
+  <name>Assemblies // Distribution tales-media-allinone</name>
   <dependencies>
     <dependency>
       <groupId>org.apache.karaf.features</groupId>
@@ -72,13 +70,6 @@
           <include>**/*</include>
         </includes>
       </resource>
-      <resource>
-        <directory>..</directory>
-        <filtering>false</filtering>
-        <includes>
-          <include>package.xml</include>
-        </includes>
-      </resource>
     </resources>
     <plugins>
       <plugin>
@@ -104,7 +95,6 @@
             <feature>service</feature>
             <feature>system</feature>
             <feature>config</feature>
-            <feature>pax-web-karaf</feature>
             <!-- Opencast external features -->
             <feature>jpa</feature>
             <feature>http</feature>
@@ -118,9 +108,7 @@
             <feature>eclipselink</feature>
             <feature>wrap</feature>
             <!-- Opencast features -->
-            <feature>opencast-allinone</feature>
-            <feature>opencast-pluginmanager</feature>
-            <feature>opencast-security-jwt</feature>
+            <feature>tales-media-allinone</feature>
           </bootFeatures>
         </configuration>
       </plugin>
