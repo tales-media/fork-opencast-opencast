@@ -147,7 +147,7 @@
     <bundle start-level="82">mvn:org.opencastproject/opencast-ingest-download-service-impl/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-inspection-service-api/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-inspection-service-ffmpeg/${project.version}</bundle>
-    <bundle start-level="82">mvn:org.opencastproject/opencast-list-providers-service/${project.version}</bundle>
+    <bundle start-level="82">mvn:org.opencastproject/opencast-list-providers-api/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-metadata-api/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-mpeg7/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-publication-service-api/${project.version}</bundle>
@@ -237,7 +237,9 @@
     <bundle start-level="82">mvn:org.opencastproject/opencast-inspection-service-api/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-inspection-service-remote/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-inspection-workflowoperation/${project.version}</bundle>
-    <bundle start-level="82">mvn:org.opencastproject/opencast-list-providers-service/${project.version}</bundle>
+    <bundle start-level="82">mvn:org.opencastproject/opencast-list-providers-api/${project.version}</bundle>
+    <bundle start-level="82">mvn:org.opencastproject/opencast-list-providers-common/${project.version}</bundle>
+    <bundle start-level="82">mvn:org.opencastproject/opencast-list-providers-impl/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-live-schedule-api/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-live-schedule-impl/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-logging-workflowoperation/${project.version}</bundle>
@@ -368,7 +370,9 @@
     <bundle start-level="82">mvn:org.opencastproject/opencast-inspection-service-api/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-inspection-service-ffmpeg/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-inspection-workflowoperation/${project.version}</bundle>
-    <bundle start-level="82">mvn:org.opencastproject/opencast-list-providers-service/${project.version}</bundle>
+    <bundle start-level="82">mvn:org.opencastproject/opencast-list-providers-api/${project.version}</bundle>
+    <bundle start-level="82">mvn:org.opencastproject/opencast-list-providers-common/${project.version}</bundle>
+    <bundle start-level="82">mvn:org.opencastproject/opencast-list-providers-impl/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-live-schedule-api/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-live-schedule-impl/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-logging-workflowoperation/${project.version}</bundle>
