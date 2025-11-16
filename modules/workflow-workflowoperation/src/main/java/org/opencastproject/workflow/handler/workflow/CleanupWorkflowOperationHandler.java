@@ -157,8 +157,8 @@ public class CleanupWorkflowOperationHandler extends AbstractWorkflowOperationHa
   /**
    * {@inheritDoc}
    *
-   * @see org.opencastproject.workflow.api.AbstractWorkflowOperationHandler#start(org.opencastproject.workflow.api.WorkflowInstance,
-   *      JobContext)
+   * @see org.opencastproject.workflow.api.AbstractWorkflowOperationHandler#start(
+   *      org.opencastproject.workflow.api.WorkflowInstance, JobContext)
    */
   @Override
   public WorkflowOperationResult start(WorkflowInstance workflowInstance, JobContext context)
@@ -198,19 +198,22 @@ public class CleanupWorkflowOperationHandler extends AbstractWorkflowOperationHa
     }
 
     // If the configuration does not specify flavors, remove them all
-    for (String flavor : asList(flavors))
+    for (String flavor : asList(flavors)) {
       flavorsToPreserve.add(MediaPackageElementFlavor.parseFlavor(flavor));
+    }
 
     tagsToPreserve = asList(tags);
 
     List<MediaPackageElement> elementsToRemove = new ArrayList<>();
     for (MediaPackageElement element : mediaPackage.getElements()) {
-      if (element.getURI() == null)
+      if (element.getURI() == null) {
         continue;
+      }
 
 
-      if (!isPreserved(element, flavorsToPreserve, tagsToPreserve))
+      if (!isPreserved(element, flavorsToPreserve, tagsToPreserve)) {
         elementsToRemove.add(element);
+      }
     }
 
     List<String> externalBaseUrls = null;
@@ -259,8 +262,9 @@ public class CleanupWorkflowOperationHandler extends AbstractWorkflowOperationHa
    */
   private boolean isPreserved(MediaPackageElement element, List<MediaPackageElementFlavor> flavorsToPreserve,
       List<String> tagsToPreserve) {
-    if (Publication == element.getElementType())
+    if (Publication == element.getElementType()) {
       return true;
+    }
 
     for (MediaPackageElementFlavor flavor : flavorsToPreserve) {
       if (flavor.matches(element.getFlavor())) {
@@ -280,8 +284,10 @@ public class CleanupWorkflowOperationHandler extends AbstractWorkflowOperationHa
   private List<String> getAllWorkingFileRepositoryUrls() {
     List<String> wfrBaseUrls = new ArrayList<String>();
     try {
-      for (ServiceRegistration reg : serviceRegistry.getServiceRegistrationsByType(WorkingFileRepository.SERVICE_TYPE))
+      for (ServiceRegistration reg
+          : serviceRegistry.getServiceRegistrationsByType(WorkingFileRepository.SERVICE_TYPE)) {
         wfrBaseUrls.add(UrlSupport.concat(reg.getHost(), reg.getPath()));
+      }
     } catch (ServiceRegistryException e) {
       logger.warn("Unable to load services of type {} from service registry: {}",
               WorkingFileRepository.SERVICE_TYPE, e.getMessage());

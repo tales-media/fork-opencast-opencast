@@ -221,8 +221,9 @@ final class WorkflowOperationWorker {
       return result;
     } catch (Exception e) {
       operation.setState(OperationState.FAILED);
-      if (e instanceof WorkflowOperationException)
+      if (e instanceof WorkflowOperationException) {
         throw (WorkflowOperationException) e;
+      }
       throw new WorkflowOperationException(e);
     }
   }
@@ -260,8 +261,9 @@ final class WorkflowOperationWorker {
       return resumableHandler.resume(workflow, null, properties);
     } catch (Exception e) {
       operation.setState(OperationState.FAILED);
-      if (e instanceof WorkflowOperationException)
+      if (e instanceof WorkflowOperationException) {
         throw (WorkflowOperationException) e;
+      }
       throw new WorkflowOperationException(e);
     }
   }
