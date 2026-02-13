@@ -126,6 +126,7 @@
 
     <bundle start-level="82">mvn:media.tales/tales-media-userdirectory/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-workflow-service-remote/${project.version}</bundle>
+    <bundle start-level="82">mvn:org.opencastproject/opencast-workspace-api/${project.version}</bundle>
   </feature>
 
   <feature name="tales-media-worker" version="${project.version}">
