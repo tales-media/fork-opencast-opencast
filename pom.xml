@@ -71,7 +71,7 @@
     <!-- custom tales.media modules -->
     <module>modules/tales-media-userdirectory</module>
 
-    <module>modules/admin-ui</module>
+    <module>modules/admin-service</module>
     <module>modules/adopter-registration-api</module>
     <module>modules/adopter-registration-impl</module>
     <module>modules/analyze-mediapackage-workflowoperation</module>
