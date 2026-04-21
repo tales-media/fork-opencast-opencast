@@ -28,6 +28,8 @@ import static java.nio.file.Files.exists;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Objects.requireNonNull;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +53,14 @@ public final class FileSupport {
 
   /** Name of the java environment variable for the temp directory */
   private static final String IO_TMPDIR = "java.io.tmpdir";
+
+  /**
+   * Maximum length for a filename in characters. This limit aligns with common filesystem restrictions,
+   * particularly those enforced by POSIX-compliant systems (e.g., ext4, NTFS).
+   *
+   * @see #derivedFile(File, String, Object...)
+   */
+  public static final int MAX_FILE_NAME_LENGTH = 255;
 
   /** Work directory */
   private static File tmpDir = null;
@@ -565,4 +575,74 @@ public final class FileSupport {
     return tmp;
   }
 
+  /**
+   * Derives a new file from the given source file by appending the given segments to the base name of the source file
+   * and changing the extension to the given one. The new file will be located in the same directory as the source file.
+   * <p>
+   * The method constructs a new filename by:
+   * <ul>
+   *   <li>Removing the extension from the source filename</li>
+   *   <li>Appending each segment from <code>fileNameSegments</code> as a hyphen-separated suffix</li>
+   *   <li>Appending the provided extension</li>
+   * </ul>
+   * If the resulting filename exceeds {@link #MAX_FILE_NAME_LENGTH}, it will be truncated from the beginning to fit
+   * within the limit, preserving the end of the filename.
+   * </p>
+   *
+   * <p>
+   * Example: <code>derivedFile(new File("/path/to/video.mp4"), "webm", "720p", "preview")</code>
+   * results in a File object for <code>/path/to/video-720p-preview.webm</code>
+   * </p>
+   *
+   * @param source
+   *          the source file from which the base name and parent directory will be derived. Must not be null.
+   * @param ext
+   *          the new file extension. If the extension is non-empty and does not contain a dot, one will be prepended.
+   * @param fileNameSegments
+   *          variable-length arguments to append to the base filename as hyphen-separated segments (e.g., quality,
+   *          format, or processing stage indicators)
+   * @return a new {@link File} object with the derived filename, located in the same parent directory as the
+   *         source file
+   */
+  public static File derivedFile(File source, String ext, Object... fileNameSegments) {
+    var fileName = new StringBuilder();
+    var baseFileName = FilenameUtils.removeExtension(source.getName());
+    fileName.append(baseFileName);
+    for (Object segment : fileNameSegments) {
+      fileName.append("-");
+      fileName.append(segment);
+    }
+    if (!ext.isEmpty() && !ext.contains(".")) {
+      fileName.append(".");
+    }
+    fileName.append(ext);
+    return new File(source.getParentFile(), toSafeName(fileName.toString(), null));
+  }
+
+  /**
+   * Returns the filename translated into a version that can safely be used as part of a file system path.
+   * <p>
+   * The method shortens both the base file name and the extension to a maximum of {@link #MAX_FILE_NAME_LENGTH}
+   * characters each, and replaces unsafe characters with &lt;doce&gt;_&lt;/doce&gt;.
+   * </p>
+   *
+   * @param fileName
+   *          The file name.
+   * @param fileNameRegex
+   *          A regular expression matching characters that should be replaced with an underscore. If empty, no
+   *          characters will be replaced.
+   * @return the safe version
+   */
+  public static String toSafeName(String fileName, String fileNameRegex) {
+    var baseName = FilenameUtils.getBaseName(fileName);
+    var extension = FilenameUtils.getExtension(fileName);
+    if (fileNameRegex != null && !fileNameRegex.isEmpty()) {
+      baseName = baseName.replaceAll(fileNameRegex, "_");
+      extension = extension.replaceAll(fileNameRegex, "_");
+    }
+    if (extension.isEmpty()) {
+      return StringUtils.right(baseName, MAX_FILE_NAME_LENGTH);
+    }
+    return StringUtils.right(baseName + "." + extension, MAX_FILE_NAME_LENGTH);
+  }
 }

@@ -34,11 +34,11 @@ import org.opencastproject.security.api.SecurityService;
 import org.opencastproject.security.api.UserDirectoryService;
 import org.opencastproject.serviceregistry.api.ServiceRegistry;
 import org.opencastproject.serviceregistry.api.ServiceRegistryException;
+import org.opencastproject.util.FileSupport;
 import org.opencastproject.util.LoadUtil;
 import org.opencastproject.util.NotFoundException;
 import org.opencastproject.workspace.api.Workspace;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.osgi.service.cm.ConfigurationException;
@@ -305,14 +305,14 @@ public class CropServiceImpl extends AbstractJobProducer implements CropService,
 
     // FFmpeg command for cropping video
     logger.info("String for startCropping command: {}", crop);
-    String croppedOutputPath = FilenameUtils.removeExtension(mediaFile.getAbsolutePath())
-        .concat(RandomStringUtils.randomAlphanumeric(8) + targetExtension);
+    File croppedOutputFile = FileSupport.derivedFile(mediaFile, targetExtension,
+        RandomStringUtils.randomAlphanumeric(8));
     String[] cropCommand = new String[] {
         binary,
         "-i", mediaFile.getAbsolutePath(),
         "-vf", crop,
         additionalParameters,
-        croppedOutputPath
+        croppedOutputFile.getAbsolutePath()
     };
     String cropCommandline = StringUtils.join(cropCommand, " ");
 
@@ -333,7 +333,7 @@ public class CropServiceImpl extends AbstractJobProducer implements CropService,
       throw new CropException("Ffmpeg exited abnormally with status " + exitCode);
     }
 
-    return new File(croppedOutputPath);
+    return croppedOutputFile;
   }
 
   @Override

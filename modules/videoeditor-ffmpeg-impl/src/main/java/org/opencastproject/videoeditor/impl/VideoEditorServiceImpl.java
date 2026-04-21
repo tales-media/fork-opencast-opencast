@@ -52,6 +52,7 @@ import org.opencastproject.subtitleparser.webvttparser.WebVTTParser;
 import org.opencastproject.subtitleparser.webvttparser.WebVTTSubtitle;
 import org.opencastproject.subtitleparser.webvttparser.WebVTTSubtitleCue;
 import org.opencastproject.subtitleparser.webvttparser.WebVTTWriter;
+import org.opencastproject.util.FileSupport;
 import org.opencastproject.util.LoadUtil;
 import org.opencastproject.util.NotFoundException;
 import org.opencastproject.videoeditor.api.ProcessFailedException;
@@ -325,8 +326,8 @@ public class VideoEditorServiceImpl extends AbstractJobProducer implements Video
         outputFileExtension = '.' + outputFileExtension;
       }
 
-      String filename = String.format("%s-%s%s", sourceTrackFlavor,
-              FilenameUtils.removeExtension(sourceFile.getName()), outputFileExtension);
+      String filename = FileSupport.derivedFile(sourceFile, outputFileExtension,
+          sourceTrackFlavor.getType(), sourceTrackFlavor.getSubtype()).getName();
       File outputPath = new File(tempDirectory, filename);
 
       if (!outputPath.getParentFile().exists()) {

@@ -34,6 +34,7 @@ import org.opencastproject.security.api.SecurityService;
 import org.opencastproject.security.api.UserDirectoryService;
 import org.opencastproject.serviceregistry.api.ServiceRegistry;
 import org.opencastproject.serviceregistry.api.ServiceRegistryException;
+import org.opencastproject.util.FileSupport;
 import org.opencastproject.util.IoSupport;
 import org.opencastproject.util.LoadUtil;
 import org.opencastproject.util.NotFoundException;
@@ -337,8 +338,8 @@ public class WaveformServiceImpl extends AbstractJobProducer implements Waveform
           "Error reading the media file in the workspace", e);
     }
 
-    String waveformFilePath = FilenameUtils.removeExtension(mediaFile.getAbsolutePath())
-            .concat('-' + track.getIdentifier()).concat("-waveform.png");
+    String waveformFilePath = FileSupport.derivedFile(mediaFile, ".png",
+        track.getIdentifier(), "waveform").getAbsolutePath();
 
     int width = getWaveformImageWidth(track, pixelsPerMinute, minWidth, maxWidth);
 

@@ -24,6 +24,7 @@ package org.opencastproject.speechtotext.impl.engine;
 import org.opencastproject.speechtotext.api.SpeechToTextEngine;
 import org.opencastproject.speechtotext.api.SpeechToTextEngineException;
 import org.opencastproject.speechtotext.util.LangCodeUtil;
+import org.opencastproject.util.FileSupport;
 import org.opencastproject.util.OsgiUtil;
 
 import org.apache.commons.io.FilenameUtils;
@@ -233,7 +234,7 @@ public class WhisperEngine implements SpeechToTextEngine {
 
     // Detect language if not set
     if (language.isBlank()) {
-      var jsonFile = FilenameUtils.removeExtension(output.getAbsolutePath()) + ".json";
+      var jsonFile = FileSupport.derivedFile(output, ".json");
       var jsonParser = new JSONParser();
       try {
         FileReader reader = new FileReader(jsonFile);

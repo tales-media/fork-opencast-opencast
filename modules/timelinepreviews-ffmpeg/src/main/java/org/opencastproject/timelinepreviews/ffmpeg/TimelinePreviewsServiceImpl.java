@@ -37,6 +37,7 @@ import org.opencastproject.serviceregistry.api.ServiceRegistry;
 import org.opencastproject.serviceregistry.api.ServiceRegistryException;
 import org.opencastproject.timelinepreviews.api.TimelinePreviewsException;
 import org.opencastproject.timelinepreviews.api.TimelinePreviewsService;
+import org.opencastproject.util.FileSupport;
 import org.opencastproject.util.IoSupport;
 import org.opencastproject.util.LoadUtil;
 import org.opencastproject.util.MimeTypes;
@@ -384,8 +385,8 @@ public class TimelinePreviewsServiceImpl extends AbstractJobProducer implements
           "Error reading the media file in the workspace", e);
     }
 
-    String imageFilePath = FilenameUtils.removeExtension(mediaFile.getAbsolutePath()) + '_' + UUID.randomUUID()
-                           + "_timelinepreviews" + outputFormat;
+    String imageFilePath = FileSupport.derivedFile(mediaFile, outputFormat,
+        UUID.randomUUID(), "timelinepreviews").getAbsolutePath();
     int exitCode = 1;
     String[] command = new String[] {
         binary,

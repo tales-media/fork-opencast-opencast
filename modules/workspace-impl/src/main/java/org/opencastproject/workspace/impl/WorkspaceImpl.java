@@ -355,8 +355,7 @@ public final class WorkspaceImpl implements Workspace {
     File inWs = toWorkspaceFile(uri);
 
     if (uniqueFilename) {
-      inWs = new File(FilenameUtils.removeExtension(inWs.getAbsolutePath()) + '-' + UUID.randomUUID() + '.'
-              + FilenameUtils.getExtension(inWs.getName()));
+      inWs = FileSupport.derivedFile(inWs, FilenameUtils.getExtension(inWs.getName()), UUID.randomUUID());
       logger.debug("Created unique filename: {}", inWs);
     }
 
@@ -372,7 +371,6 @@ public final class WorkspaceImpl implements Workspace {
           // if the file exists in the workspace, but is older than the wfr copy, replace it
           if (workspaceFileLastModified < wfrCopy.lastModified()) {
             logger.debug("Replacing {} with an updated version from the file repository", inWs.getAbsolutePath());
-//            locked(inWs, copyOrLink(wfrCopy));
             locked(inWs, f -> {
               copyOrLink(wfrCopy, f).run();
               return null;
