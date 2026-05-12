@@ -111,7 +111,7 @@ public class VideoSegmenterWorkflowOperationHandler extends AbstractWorkflowOper
 
     // Select the source flavors
     List<Track> candidates = elementSelector.select(mediaPackage, true).stream()
-        .filter(t -> !t.hasVideo()) // Remove unsupported tracks (only those containing video can be segmented)
+        .filter(Track::hasVideo) // Remove unsupported tracks (only those containing video can be segmented)
         .toList();
 
     // Found one?
