@@ -171,6 +171,9 @@ RUN apt-get update \
       netcat-openbsd \
       openssl \
       rsync \
+      tesseract-ocr \
+      tesseract-ocr-eng \
+      tesseract-ocr-deu \
       tzdata \
       xmlstarlet \
  && rm -rf /var/lib/apt/lists/*
