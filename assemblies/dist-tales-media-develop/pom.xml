@@ -13,9 +13,9 @@
     <enableJobDispatching>true</enableJobDispatching>
     <enableDeveloperMode>true</enableDeveloperMode>
   </properties>
-  <artifactId>opencast-dist-develop</artifactId>
+  <artifactId>opencast-dist-tales-media-develop</artifactId>
   <packaging>karaf-assembly</packaging>
-  <name>Assemblies // Distribution Develop</name>
+  <name>Assemblies // Distribution tales-media-develop</name>
   <dependencies>
     <dependency>
       <groupId>org.apache.karaf.features</groupId>
@@ -115,9 +115,7 @@
             <feature>eclipselink</feature>
             <feature>wrap</feature>
             <!-- Opencast features -->
-            <feature>opencast-allinone</feature>
-            <feature>opencast-pluginmanager</feature>
-            <feature>opencast-security-jwt</feature>
+            <feature>tales-media-allinone</feature>
           </bootFeatures>
         </configuration>
       </plugin>

@@ -10,9 +10,9 @@
   <properties>
     <opencast.basedir>${project.basedir}/../..</opencast.basedir>
   </properties>
-  <artifactId>opencast-dist-presentation</artifactId>
+  <artifactId>opencast-dist-tales-media-worker</artifactId>
   <packaging>karaf-assembly</packaging>
-  <name>Assemblies // Distribution Presentation</name>
+  <name>Assemblies // Distribution tales-media-worker</name>
   <dependencies>
     <dependency>
       <groupId>org.apache.karaf.features</groupId>
@@ -105,9 +105,7 @@
             <feature>eclipselink</feature>
             <feature>wrap</feature>
             <!-- Opencast features -->
-            <feature>opencast-presentation</feature>
-            <feature>opencast-pluginmanager</feature>
-            <feature>opencast-security-jwt</feature>
+            <feature>tales-media-worker</feature>
           </bootFeatures>
         </configuration>
       </plugin>
