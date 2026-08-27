@@ -1053,7 +1053,10 @@ public class EditorServiceImpl implements EditorService {
             .orElse(null);
       }
 
-      final int priority = thumbnailSourcePrimary.indexOf(track.getFlavor());
+      int priority = thumbnailSourcePrimary.indexOf(track.getFlavor());
+      if (priority < 0) {
+        priority = 9999;
+      }
 
       if (localPublication == null) {
         localPublication = isLocal(track.getURI());
