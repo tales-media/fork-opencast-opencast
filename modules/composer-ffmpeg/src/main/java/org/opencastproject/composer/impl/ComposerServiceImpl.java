@@ -720,9 +720,6 @@ public class ComposerServiceImpl extends AbstractJobProducer implements Composer
   @Override
   public Job mux(Map<String, Track> sourceTracks, String profileId) throws EncoderException, MediaPackageException {
     try {
-      if (sourceTracks == null || sourceTracks.size() < 2) {
-        throw new EncoderException("At least two source tracks must be given.");
-      }
       final EncodingProfile profile = profileScanner.getProfile(profileId);
       List<String> jobArgs = new ArrayList<>();
       jobArgs.add(profileId);
