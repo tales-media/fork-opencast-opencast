@@ -83,6 +83,8 @@ import org.slf4j.LoggerFactory;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -331,6 +333,33 @@ public class ServiceRegistryJpaImpl implements ServiceRegistry, ManagedService {
       acceptJobLoadsExeedingMaxLoad = getOptContextProperty(cc, ACCEPT_JOB_LOADS_EXCEEDING_PROPERTY)
               .map(Boolean::valueOf)
               .orElse(DEFAULT_ACCEPT_JOB_LOADS_EXCEEDING);
+    }
+
+    // Add special CockroachDB indexes
+    try {
+      db.execTxChecked(1, em -> {
+        String dbProductName = em.unwrap(Connection.class).getMetaData().getDatabaseProductName();
+        if ("PostgreSQL".equalsIgnoreCase(dbProductName)) {
+          // oc_job
+          em.createNativeQuery(
+              "CREATE INDEX IF NOT EXISTS oc_job_status_processor_service_storing_rec_idx "
+                  + "ON oc_job (status ASC, processor_service ASC) "
+                  + "STORING (job_load, creator_service)"
+          ).executeUpdate();
+
+          // oc_service_registration
+          em.createNativeQuery(
+              "DROP INDEX IF EXISTS oc_service_registration@ix_oc_service_registration_host_registration"
+          ).executeUpdate();
+          em.createNativeQuery(
+              "CREATE INDEX IF NOT EXISTS oc_service_registration_host_registration_storing_rec_idx "
+                  + "ON oc_service_registration (host_registration ASC) "
+                  + "STORING (active, online);"
+          ).executeUpdate();
+        }
+      });
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
 
     localSystemLoad = 0;
