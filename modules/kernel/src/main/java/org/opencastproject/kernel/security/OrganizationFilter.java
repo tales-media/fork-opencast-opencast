@@ -128,7 +128,7 @@ public class OrganizationFilter implements Filter {
       } catch (NotFoundException e) {
         logger.trace("No organization mapped to {}", url);
         List<Organization> orgs = organizationDirectory.getOrganizations();
-        if (orgs.size() == 1) {
+        if (orgs.size() == 1 || url.getPath().equals("/metrics")) {
           org = orgs.get(0);
           logger.trace("Defaulting organization to {}", org);
         }
