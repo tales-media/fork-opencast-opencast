@@ -44,14 +44,11 @@ import org.opencastproject.workflow.api.WorkflowOperationResult;
 import org.opencastproject.workflow.api.WorkflowOperationResult.Action;
 import org.opencastproject.workspace.api.Workspace;
 
-import org.apache.commons.lang3.StringUtils;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -69,15 +66,6 @@ public class VideoSegmenterWorkflowOperationHandler extends AbstractWorkflowOper
 
   /** The logging facility */
   private static final Logger logger = LoggerFactory.getLogger(VideoSegmenterWorkflowOperationHandler.class);
-
-  /** Name of the configuration key that specifies the flavor of the track to analyze */
-  private static final String PROP_ANALYSIS_TRACK_FLAVOR = "source-flavor";
-
-  /** Name of the configuration key that specifies the flavor of the track to analyze */
-  private static final String PROP_TARGET_TAGS = "target-tags";
-
-  /** Name of the configuration key that specifies the tag of the track to analyze */
-  private static final String PROP_ANALYSIS_TRACK_TAG = "source-tags";
 
   /** Minimum video length in seconds for video segmentation to run */
   private static final int MIN_VIDEO_LENGTH = 30000;
@@ -102,32 +90,32 @@ public class VideoSegmenterWorkflowOperationHandler extends AbstractWorkflowOper
     // Find movie track to analyze
     ConfiguredTagsAndFlavors tagsAndFlavors = getTagsAndFlavors(workflowInstance,
         Configuration.many, Configuration.many, Configuration.many, Configuration.none);
-    String trackTag = StringUtils.trimToNull(operation.getConfiguration(PROP_ANALYSIS_TRACK_TAG));
-    String trackFlavor = StringUtils.trimToNull(operation.getConfiguration(PROP_ANALYSIS_TRACK_FLAVOR));
+    List<String> sourceTagsOption = tagsAndFlavors.getSrcTags();
+    List<MediaPackageElementFlavor> sourceFlavorsOption = tagsAndFlavors.getSrcFlavors();
     ConfiguredTagsAndFlavors.TargetTags targetTags = tagsAndFlavors.getTargetTags();
-    List<Track> candidates = new ArrayList<Track>();
+
     // Allow the combination of flavor and tag to narrow down choice of source
+    AbstractMediaPackageElementSelector<Track> elementSelector = new TrackSelector();
 
-    if (StringUtils.isBlank(trackTag) && StringUtils.isBlank(trackFlavor)) {
+    if (sourceTagsOption.isEmpty() && sourceFlavorsOption.isEmpty()) {
       // Default
-      candidates.addAll(Arrays.asList(mediaPackage.getTracks(MediaPackageElements.PRESENTATION_SOURCE)));
+      elementSelector.addFlavor(MediaPackageElements.PRESENTATION_SOURCE);
     } else {
-      AbstractMediaPackageElementSelector<Track> elementSelector = new TrackSelector();
-      if (StringUtils.isNotBlank(trackTag)) {
-        elementSelector.addTag(trackTag);
+      for (MediaPackageElementFlavor flavor : sourceFlavorsOption) {
+        elementSelector.addFlavor(flavor);
       }
-      if (StringUtils.isNotBlank(trackFlavor)) {
-        elementSelector.addFlavor(MediaPackageElementFlavor.parseFlavor(trackFlavor));
+      for (String tag : sourceTagsOption) {
+        elementSelector.addTag(tag);
       }
-      candidates.addAll(elementSelector.select(mediaPackage, true));
     }
-    // Select the source flavors
 
-    // Remove unsupported tracks (only those containing video can be segmented)
-    candidates.removeIf(t -> !t.hasVideo());
+    // Select the source flavors
+    List<Track> candidates = elementSelector.select(mediaPackage, true).stream()
+        .filter(Track::hasVideo) // Remove unsupported tracks (only those containing video can be segmented)
+        .toList();
 
     // Found one?
-    if (candidates.size() == 0) {
+    if (candidates.isEmpty()) {
       logger.info("No matching tracks available for video segmentation in workflow {}", workflowInstance);
       return createResult(Action.CONTINUE);
     }
