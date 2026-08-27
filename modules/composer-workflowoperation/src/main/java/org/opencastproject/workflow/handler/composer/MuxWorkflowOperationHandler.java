@@ -45,6 +45,7 @@ import org.opencastproject.workflow.api.WorkflowOperationResult;
 import org.opencastproject.workflow.api.WorkflowOperationResult.Action;
 import org.opencastproject.workspace.api.Workspace;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -58,6 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -72,6 +74,18 @@ import java.util.stream.Collectors;
     }
 )
 public class MuxWorkflowOperationHandler extends AbstractWorkflowOperationHandler {
+
+  /**
+   * Configuration key for the mux operation to run in for-each mode. If set to true, the mux operation will be executed
+   * for each main source track. If set to false, the mux operation will be executed once with all main source tracks as
+   * inputs.
+   */
+  private static final String OPT_FOR_EACH = "for-each";
+
+  /**
+   * Default value for the for-each configuration.
+   */
+  private static final String DEFAULT_FOR_EACH = "false";
 
   /** The logging facility */
   private static final Logger logger = LoggerFactory.getLogger(MuxWorkflowOperationHandler.class);
@@ -200,44 +214,91 @@ public class MuxWorkflowOperationHandler extends AbstractWorkflowOperationHandle
     }
 
     if (inputTracks.isEmpty()) {
-      logger.warn("No source tags or flavors have been specified, not matching anything");
+      logger.warn("No matching tracks found");
       return createResult(mediaPackage, Action.SKIP);
     }
-    String profileOption = StringUtils.trimToNull(operation.getConfiguration("encoding-profile"));
-    if (profileOption == null) {
+    boolean forEach = BooleanUtils.toBoolean(getConfig(workflowInstance, OPT_FOR_EACH, DEFAULT_FOR_EACH));
+    if (forEach && inputTracks.get("video").isEmpty()) {
+      logger.warn("No matching main tracks found with active for-each mode");
+      return createResult(mediaPackage, Action.SKIP);
+    }
+
+    String profileId = StringUtils.trimToNull(operation.getConfiguration("encoding-profile"));
+    if (profileId == null) {
       throw new WorkflowOperationException("No encoding profile was specified");
     }
-    String profileId = StringUtils.trim(profileOption);
     EncodingProfile profile = composerService.getProfile(profileId);
     if (profile == null) {
       throw new WorkflowOperationException("Encoding profile '" + profileId + "' was not found");
     }
 
-    Map<String, Track> muxSourceTracksMap = new HashMap<>();
-    for (String srcType : inputTracks.keySet()) {
-      List<Track> srcTypeTracks = inputTracks.get(srcType);
-      for (int i = 0; i < srcTypeTracks.size(); i++) {
-        muxSourceTracksMap.put(String.format("%s.%d", srcType, i + 1), srcTypeTracks.get(i));
+    List<Map<String, Track>> muxSourceTracksMaps = new ArrayList<>();
+    if (forEach) {
+      Set<Map.Entry<String, List<Track>>> inputTracksWithoutVideo = inputTracks.entrySet().stream()
+          .filter(srcType -> !srcType.getKey().equals("video"))
+          .collect(Collectors.toSet());
+      inputTracks.get("video").forEach(videoTrack -> {
+        Map<String, Track> muxSourceTracksMap = new HashMap<>();
+        muxSourceTracksMap.put("video.1", videoTrack);
+        for (Map.Entry<String, List<Track>> srcType : inputTracksWithoutVideo) {
+          List<Track> srcTypeTracks = srcType.getValue();
+          for (int i = 0; i < srcTypeTracks.size(); i++) {
+            muxSourceTracksMap.put(String.format("%s.%d", srcType.getKey(), i + 1), srcTypeTracks.get(i));
+          }
+        }
+        muxSourceTracksMaps.add(muxSourceTracksMap);
+      });
+    } else {
+      Map<String, Track> muxSourceTracksMap  = new HashMap<>();
+      for (String srcType : inputTracks.keySet()) {
+        List<Track> srcTypeTracks = inputTracks.get(srcType);
+        for (int i = 0; i < srcTypeTracks.size(); i++) {
+          muxSourceTracksMap.put(String.format("%s.%d", srcType, i + 1), srcTypeTracks.get(i));
+        }
       }
+      muxSourceTracksMaps.add(muxSourceTracksMap);
     }
-    Job muxJob = composerService.mux(muxSourceTracksMap, profileId);
+
+    List<Job> muxJobs = new ArrayList<>(muxSourceTracksMaps.size());
+    for (Map<String, Track> muxSourceTracksMap : muxSourceTracksMaps) {
+      Job muxJob = composerService.mux(muxSourceTracksMap, profileId);
+      muxJobs.add(muxJob);
+    }
 
     // Wait for the jobs to return
-    if (!waitForStatus(muxJob).isSuccess()) {
-      throw new WorkflowOperationException("Mux job did not complete successfully");
+    if (!waitForStatus(muxJobs.toArray(new Job[0])).isSuccess()) {
+      throw new WorkflowOperationException("Mux jobs did not complete successfully");
     }
 
-    Track encodedTrack = (Track) MediaPackageElementParser.getFromXml(muxJob.getPayload());
-    encodedTrack.setFlavor(targetFlavor);
-    applyTargetTagsToElement(targetTagsOption, encodedTrack);
-    // store new track to mediaPackage
-    String fileName = getFileNameFromElements(encodedTrack, encodedTrack);
-    encodedTrack.setURI(workspace.moveTo(encodedTrack.getURI(), mediaPackage.getIdentifier().toString(),
-        encodedTrack.getIdentifier(), fileName));
-    if (muxSourceTracksMap.size() == 1) {
-      mediaPackage.addDerived(encodedTrack, muxSourceTracksMap.get(0));
-    } else {
-      mediaPackage.add(encodedTrack);
+    for (int i = 0; i < muxJobs.size(); i++) {
+      Job muxJob = muxJobs.get(i);
+      Track encodedTrack = (Track) MediaPackageElementParser.getFromXml(muxJob.getPayload());
+
+      MediaPackageElementFlavor encodedFlavor = targetFlavor;
+      if (forEach) {
+        Track inputTrack = inputTracks.get("video").get(i);
+        inputTrack.setTags(inputTrack.getTags());
+        if ("*".equals(encodedFlavor.getType())) {
+          encodedFlavor = new MediaPackageElementFlavor(inputTrack.getFlavor().getType(), encodedFlavor.getSubtype());
+        }
+        if ("*".equals(encodedFlavor.getSubtype())) {
+          encodedFlavor = new MediaPackageElementFlavor(encodedFlavor.getType(), inputTrack.getFlavor().getSubtype());
+        }
+      }
+      encodedTrack.setFlavor(encodedFlavor);
+      applyTargetTagsToElement(targetTagsOption, encodedTrack);
+
+      // store new track to mediaPackage
+      String fileName = getFileNameFromElements(encodedTrack, encodedTrack);
+      encodedTrack.setURI(workspace.moveTo(encodedTrack.getURI(), mediaPackage.getIdentifier().toString(),
+          encodedTrack.getIdentifier(), fileName));
+      if (forEach) {
+        mediaPackage.addDerived(encodedTrack, inputTracks.get("video").get(i));
+      } else if (muxSourceTracksMaps.get(i).size() == 1) {
+        mediaPackage.addDerived(encodedTrack, muxSourceTracksMaps.get(i).values().iterator().next());
+      } else {
+        mediaPackage.add(encodedTrack);
+      }
     }
 
     WorkflowOperationResult result = createResult(mediaPackage, Action.CONTINUE);
