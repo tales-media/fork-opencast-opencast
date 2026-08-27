@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
 
 public final class WorkflowConditionInterpreter {
   private static final Pattern PROPERTY_PATTERN =
-      Pattern.compile("\\$\\{(?<varname>([^:}]|\\\\:)+)((?<!\\\\):(?<def>[^}]+))?}");
+      Pattern.compile("\\$\\{(?<varname>([^:}]|\\\\:)+)((?<!\\\\):(?<def>[^}]*))?}");
 
   private WorkflowConditionInterpreter() {
   }
