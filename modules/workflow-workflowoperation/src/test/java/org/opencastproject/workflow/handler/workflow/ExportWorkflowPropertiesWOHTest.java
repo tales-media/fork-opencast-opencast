@@ -106,6 +106,7 @@ public class ExportWorkflowPropertiesWOHTest {
     expect(wi.getConfigurationKeys()).andStubReturn(keys);
     expect(wi.getConfiguration("presenter_position")).andStubReturn("right");
     expect(wi.getConfiguration("cover_marker_in_s")).andStubReturn("30.674");
+    expect(wi.getConfiguration("chapter")).andStubReturn(null);
 
     replay(wi);
 

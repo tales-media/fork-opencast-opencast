@@ -116,9 +116,11 @@ public class ExportWorkflowPropertiesWOH extends AbstractWorkflowOperationHandle
       existingPropsElem = Optional.of(attachments.iterator().next());
       workflowProps = loadPropertiesFromXml(workspace, existingPropsElem.get().getURI());
 
-      // Remove specified keys
+      // Remove specified keys if they have new values
       for (String key : keys) {
-        workflowProps.remove(key);
+        if (workflowInstance.getConfiguration(key) != null) {
+          workflowProps.remove(key);
+        }
       }
     }
 
