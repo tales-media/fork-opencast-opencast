@@ -117,6 +117,9 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /** FFMPEG based implementation of the composer service api. */
@@ -223,6 +226,9 @@ public class ComposerServiceImpl extends AbstractJobProducer implements Composer
     Encode, Image, ImageConversion, Mux, Trim, Composite, Concat, ImageToVideo, ParallelEncode, Demux, ProcessSmil,
     MultiEncode
   }
+
+  // Encoding track group regex, e.g. video.1, video.2, ... -> group = video
+  private static final Pattern ENCODING_TRACK_GROUP = Pattern.compile("^(?<group>[^.]*)(\\.(?<index>[0-9]+))?$");
 
   /** tracked encoder engines */
   private Set<EncoderEngine> activeEncoder = new HashSet<>();
@@ -407,18 +413,29 @@ public class ComposerServiceImpl extends AbstractJobProducer implements Composer
     }
 
     // Handle input count substitution
-    String substitutionKey = String.format("if-input-count-eq-%d", tracks.size());
-    String substitution = profile.getExtension(StringUtils.join(CMD_SUFFIX, '.', substitutionKey));
-    if (StringUtils.isNotBlank(substitution)) {
-      props.put(substitutionKey, substitution);
-    }
+    addProfileSubstitutions(String.format("if-input-count-eq-%d", tracks.size()), profile, props);
     for (int i = 1; i <= tracks.size(); i++) {
-      substitutionKey = String.format("if-input-count-geq-%d", i);
-      substitution = profile.getExtension(StringUtils.join(CMD_SUFFIX, '.', substitutionKey));
-      if (StringUtils.isNotBlank(substitution)) {
-        props.put(substitutionKey, substitution);
-      }
+      addProfileSubstitutions(String.format("if-input-count-geq-%d", i), profile, props);
     }
+
+    // Handle track group substitution
+    tracks.keySet().stream()
+        .map(trackId -> {
+          Matcher matcher = ENCODING_TRACK_GROUP.matcher(trackId);
+          if (matcher.find()) {
+            return matcher.group("group");
+          }
+          return trackId;
+        }).collect(Collectors.groupingBy(
+            Function.identity(),
+            Collectors.collectingAndThen(Collectors.toList(), List::size)
+        )).forEach((groupName, count) -> {
+          addProfileSubstitutions(String.format("if-%s-count-eq-%d", groupName, count), profile, props);
+          for (int i = 1; i <= count; i++) {
+            addProfileSubstitutions(String.format("if-%s-count-geq-%d", groupName, i), profile, props);
+          }
+        });
+
     // Handle lang:<LOCALE> tags
     tracks.entrySet().stream()
         .map(e -> new Tuple<>(e.getKey(), Arrays.stream(e.getValue().getTags())
@@ -1977,6 +1994,13 @@ public class ComposerServiceImpl extends AbstractJobProducer implements Composer
       sb.append("\n");
     }
     return sb.toString();
+  }
+
+  private void addProfileSubstitutions(String keyPrefix, EncodingProfile profile, Map<String, String> properties) {
+    String searchPrefix = StringUtils.join(CMD_SUFFIX, '.', keyPrefix);
+    profile.getExtensions().entrySet().stream()
+        .filter(e -> searchPrefix.equals(e.getKey()) || e.getKey().startsWith(searchPrefix + "-"))
+        .forEach(e -> properties.put(e.getKey(), e.getValue()));
   }
 
   /**
