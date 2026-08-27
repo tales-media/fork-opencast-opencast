@@ -36,7 +36,6 @@ import org.opencastproject.workingfilerepository.api.WorkingFileRepository;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.osgi.service.component.ComponentContext;
@@ -223,17 +222,8 @@ public class WorkingFileRepositoryImpl implements WorkingFileRepository, PathMap
    *          The file name
    * @return the safe version
    */
-  @Override
   public String toSafeName(String fileName) {
-    var extension = FilenameUtils.getExtension(fileName)
-        .replaceAll(filenameRegex, "_");
-    var baseName = FilenameUtils.getBaseName(fileName)
-        .replaceAll(filenameRegex, "_");
-
-    if (StringUtils.isEmpty(extension)) {
-      return StringUtils.left(baseName, 255);
-    }
-    return String.format("%.255s.%.255s", baseName, extension);
+    return FileSupport.toSafeName(fileName, filenameRegex);
   }
 
   /**

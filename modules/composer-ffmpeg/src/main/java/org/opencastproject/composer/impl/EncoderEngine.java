@@ -27,6 +27,7 @@ import org.opencastproject.composer.api.EncodingProfile;
 import org.opencastproject.composer.api.VideoClip;
 import org.opencastproject.mediapackage.AdaptivePlaylist;
 import org.opencastproject.mediapackage.identifier.IdImpl;
+import org.opencastproject.util.FileSupport;
 import org.opencastproject.util.IoSupport;
 
 import org.apache.commons.io.FileUtils;
@@ -199,8 +200,7 @@ public class EncoderEngine implements AutoCloseable {
         source.values().stream().findFirst().get()));
 
     final String outDir = parentFile.getAbsoluteFile().getParent();
-    final String outFileName = FilenameUtils.getBaseName(parentFile.getName())
-            + "_" + UUID.randomUUID().toString();
+    final String outFileName = FileSupport.derivedFile(parentFile, "", UUID.randomUUID()).getName();
     params.put("out.dir", outDir);
     params.put("out.name", outFileName);
     if (profile.getSuffix() != null) {
@@ -1245,7 +1245,7 @@ public class EncoderEngine implements AutoCloseable {
     params.put("in.video.mimetype", MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(videoInput));
     String outDir = parentFile.getAbsoluteFile().getParent(); // Use first file dir
     params.put("out.dir", outDir);
-    String outFileName = FilenameUtils.getBaseName(parentFile.getName());
+    String outFileName = FileSupport.derivedFile(parentFile, "").getName();
     params.put("out.name.base", outFileName); // Base file name used
     params.put("out.name", outFileName); // file name used - may be replaced
     return params;
