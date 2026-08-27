@@ -15,6 +15,13 @@
     <opencast.basedir>${project.basedir}/../..</opencast.basedir>
   </properties>
   <dependencies>
+    <!-- custom tales.media modules -->
+    <dependency>
+      <groupId>media.tales</groupId>
+      <artifactId>tales-media-userdirectory</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- FIXME: This sucks, but because of https://github.com/jacoco/jacoco/wiki/MavenMultiModule we need to
          manually depend on *every* Opencast module.  A check that we actually do has been added to the docs checks -->
     <dependency>

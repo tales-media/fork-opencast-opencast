@@ -177,6 +177,8 @@
   <feature name="tales-media-controller" version="${project.version}">
     <feature>tales-media-core</feature>
 
+    <bundle start-level="82">mvn:media.tales/tales-media-userdirectory/${project.version}</bundle>
+
     <bundle start-level="82">mvn:org.opencastproject/opencast-admin-service/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-adopter-registration-api/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-adopter-registration-impl/${project.version}</bundle>
@@ -308,6 +310,8 @@
 
   <feature name="tales-media-allinone" version="${project.version}">
     <feature>tales-media-core</feature>
+
+    <bundle start-level="82">mvn:media.tales/tales-media-userdirectory/${project.version}</bundle>
 
     <bundle start-level="82">mvn:org.opencastproject/opencast-admin-service/${project.version}</bundle>
     <bundle start-level="82">mvn:org.opencastproject/opencast-adopter-registration-api/${project.version}</bundle>
