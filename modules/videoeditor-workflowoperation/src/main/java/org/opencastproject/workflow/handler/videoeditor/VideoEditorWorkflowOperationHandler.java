@@ -80,6 +80,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.xml.bind.JAXBException;
 
@@ -436,6 +437,7 @@ public class VideoEditorWorkflowOperationHandler extends ResumableWorkflowOperat
 
     File smilFile = null;
     Smil smil = null;
+    String smilCatalogId = UUID.randomUUID().toString();
     try {
       smilFile = workspace.get(smilCatalogs[0].getURI());
       smil = smilService.fromXml(smilFile).getSmil();
@@ -448,10 +450,10 @@ public class VideoEditorWorkflowOperationHandler extends ResumableWorkflowOperat
         workspace.delete(mp.getIdentifier().toString(), smilCatalogs[0].getIdentifier());
         mp.remove(smilCatalogs[0]);
         // put modified SMIL into workspace
-        URI newSmilUri = workspace.put(mp.getIdentifier().toString(), smil.getId(), SMIL_FILE_NAME, is);
+        URI newSmilUri = workspace.put(mp.getIdentifier().toString(), smilCatalogId, SMIL_FILE_NAME, is);
         Catalog catalog = (Catalog) MediaPackageElementBuilderFactory.newInstance().newElementBuilder()
                 .elementFromURI(newSmilUri, MediaPackageElement.Type.Catalog, smilCatalogs[0].getFlavor());
-        catalog.setIdentifier(smil.getId());
+        catalog.setIdentifier(smilCatalogId);
         mp.add(catalog);
       } catch (Exception ex) {
         throw new WorkflowOperationException(ex);
@@ -471,7 +473,7 @@ public class VideoEditorWorkflowOperationHandler extends ResumableWorkflowOperat
     // If skipProcessing, The track is processed by a separate operation which takes the SMIL file and encode directly
     // to delivery format
     if (skipProcessing) {
-      logger.info("VideoEdit workflow {} finished - smil file is {}", workflowInstance.getId(), smil.getId());
+      logger.info("VideoEdit workflow {} finished - smil file is {}", workflowInstance.getId(), smilCatalogId);
       return createResult(mp, Action.CONTINUE);
     }
     // create video edit jobs and run them
