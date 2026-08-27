@@ -37,6 +37,7 @@ import org.opencastproject.mediapackage.selector.TrackSelector;
 import org.opencastproject.serviceregistry.api.ServiceRegistry;
 import org.opencastproject.util.NotFoundException;
 import org.opencastproject.workflow.api.AbstractWorkflowOperationHandler;
+import org.opencastproject.workflow.api.ConfiguredTagsAndFlavors;
 import org.opencastproject.workflow.api.WorkflowInstance;
 import org.opencastproject.workflow.api.WorkflowOperationException;
 import org.opencastproject.workflow.api.WorkflowOperationHandler;
@@ -412,6 +413,8 @@ public class MultiEncodeWorkflowOperationHandler extends AbstractWorkflowOperati
       Job job = entry.getKey();
       Track sourceTrack = entry.getValue().getTrack(); // source
       ElementProfileTagFlavor info = entry.getValue().getInfo(); // tags and flavors
+      ConfiguredTagsAndFlavors.TargetTags composedTargetTags = parseTargetTagsByType(asList(info.getTargetTags()));
+
       List<EncodingProfile> eplist = entry.getValue().getProfileList();
       // add this receipt's queue time to the total
       totalTimeInQueue += job.getQueueTime();
@@ -433,11 +436,13 @@ public class MultiEncodeWorkflowOperationHandler extends AbstractWorkflowOperati
             composedTrack.setFlavor(newFlavor(sourceTrack, info.getTargetFlavor()));
             logger.debug("Composed track has flavor '{}'", composedTrack.getFlavor());
           }
+          // Copy tags from source track
+          for (String tag : sourceTrack.getTags()) {
+            composedTrack.addTag(tag);
+          }
+          // Apply target tags
           if (info.getTargetTags() != null) { // Has Tags
-            for (String tag : asList(info.getTargetTags())) {
-              logger.trace("Tagging composed track with '{}'", tag);
-              composedTrack.addTag(tag);
-            }
+            applyTargetTagsToElement(composedTargetTags, composedTrack);
           }
           // Tag each output with encoding profile name if configured
           if (entry.getValue().getTagWithProfile()) {

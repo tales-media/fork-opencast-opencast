@@ -327,6 +327,7 @@ public class ExecuteManyWorkflowOperationHandler extends AbstractWorkflowOperati
         }
 
         // Set new tags
+        resultElements[i].setTags(inputElements[i].getTags());
         applyTargetTagsToElement(targetTags, resultElements[i]);
       }
 

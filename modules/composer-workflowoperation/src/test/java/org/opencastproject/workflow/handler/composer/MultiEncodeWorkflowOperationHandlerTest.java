@@ -238,6 +238,8 @@ public class MultiEncodeWorkflowOperationHandlerTest {
     configurations.put("source-flavors", "presenter/source;presentation/source");
     configurations.put("target-flavors", "presenter/work;presentation/work");
     configurations.put("encoding-profiles", PROFILE1_ID + "," + PROFILE3_ID + ";" + PROFILE2_ID + "," + PROFILE3_ID);
+    String[] targetTags1 = { "source" }; // tags from source track
+    String[] targetTags2 = { "archive" }; // tags from source track
 
     // run the operation handler
     WorkflowOperationResult result = getWorkflowOperationResult(mp, configurations);
@@ -249,12 +251,12 @@ public class MultiEncodeWorkflowOperationHandlerTest {
     Assert.assertTrue(tracksEncoded.length == 6);
     trackEncoded = mpNew.getTrack(ENCODED_TRACK_ID1);
     Assert.assertTrue("presenter/work".equals(trackEncoded.getFlavor().toString()));
-    Assert.assertEquals(0, trackEncoded.getTags().length);
+    Assert.assertArrayEquals(targetTags1, trackEncoded.getTags());
     Assert.assertTrue(SOURCE_TRACK_ID1.equals(trackEncoded.getReference().getIdentifier()));
 
     trackEncoded = mpNew.getTrack(ENCODED_TRACK_ID3);
     Assert.assertTrue("presentation/work".equals(trackEncoded.getFlavor().toString()));
-    Assert.assertEquals(0, trackEncoded.getTags().length);
+    Assert.assertArrayEquals(targetTags2, trackEncoded.getTags());
     Assert.assertTrue(SOURCE_TRACK_ID2.equals(trackEncoded.getReference().getIdentifier()));
   }
 

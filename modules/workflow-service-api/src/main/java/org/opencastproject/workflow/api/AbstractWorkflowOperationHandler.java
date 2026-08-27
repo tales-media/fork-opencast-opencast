@@ -575,17 +575,16 @@ public abstract class AbstractWorkflowOperationHandler implements WorkflowOperat
     return tagsAndFlavors;
   }
 
-  private ConfiguredTagsAndFlavors.TargetTags parseTargetTagsByType(List<String> tags) {
+  protected ConfiguredTagsAndFlavors.TargetTags parseTargetTagsByType(List<String> tags) {
     final String plus = "+";
     final String minus = "-";
-    List<String> overrideTags = new ArrayList();
-    List<String> addTags = new ArrayList();
-    List<String> removeTags = new ArrayList();
+    List<String> overrideTags = new ArrayList<>();
+    List<String> addTags = new ArrayList<>();
+    List<String> removeTags = new ArrayList<>();
 
     for (String targetTag : tags) {
       if (!StringUtils.startsWithAny(targetTag, plus, minus)) {
-        if (addTags.size() > 0
-            || removeTags.size() > 0) {
+        if (!addTags.isEmpty() || !removeTags.isEmpty()) {
           logger.warn("You may not mix override tags and tag changes. "
               + "The list of override tags so far is {}. "
               + "The tag {} is not prefixed with '{}' or '{}'.", overrideTags, targetTag, plus, minus);

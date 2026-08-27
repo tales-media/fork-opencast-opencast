@@ -243,6 +243,9 @@ public class EncodeWorkflowOperationHandler extends AbstractWorkflowOperationHan
 
         // Adjust the target tags
         for (Track encodedTrack : composedTracks) {
+          for (String tag : track.getTags()) {
+            encodedTrack.addTag(tag);
+          }
           applyTargetTagsToElement(targetTagsOption, encodedTrack);
         }
 

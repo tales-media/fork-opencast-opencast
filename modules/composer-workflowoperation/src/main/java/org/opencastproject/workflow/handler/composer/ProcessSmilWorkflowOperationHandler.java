@@ -45,6 +45,7 @@ import org.opencastproject.smil.entity.media.param.api.SmilMediaParam;
 import org.opencastproject.smil.entity.media.param.api.SmilMediaParamGroup;
 import org.opencastproject.util.NotFoundException;
 import org.opencastproject.workflow.api.AbstractWorkflowOperationHandler;
+import org.opencastproject.workflow.api.ConfiguredTagsAndFlavors;
 import org.opencastproject.workflow.api.WorkflowInstance;
 import org.opencastproject.workflow.api.WorkflowOperationException;
 import org.opencastproject.workflow.api.WorkflowOperationHandler;
@@ -546,13 +547,22 @@ public class ProcessSmilWorkflowOperationHandler extends AbstractWorkflowOperati
         if (isHLS) { // check that manifests and segments counts are correct
           decipherHLSPlaylistResults(track, entry.getValue(), mediaPackage, composedTracks);
         }
-        // Adjust the target tags
+
+        ConfiguredTagsAndFlavors.TargetTags targetTags = null;
+        if (entry.getValue().getTags() != null) {
+          targetTags = parseTargetTagsByType(entry.getValue().getTags());
+        }
+
         for (Track composedTrack : composedTracks) {
-          if (entry.getValue().getTags() != null) {
-            for (String tag : entry.getValue().getTags()) {
-              composedTrack.addTag(tag);
-            }
+          // Copy source tags
+          for (String tag : track.getTags()) {
+            composedTrack.addTag(tag);
           }
+          // Apply the target tags
+          if (targetTags != null) {
+            applyTargetTagsToElement(targetTags, composedTrack);
+          }
+
           // Adjust the target flavor. Make sure to account for partial updates
           MediaPackageElementFlavor targetFlavor = entry.getValue().getFlavor();
           if (targetFlavor != null) {
