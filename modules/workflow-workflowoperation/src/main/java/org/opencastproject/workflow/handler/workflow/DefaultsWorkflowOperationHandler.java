@@ -75,9 +75,12 @@ public class DefaultsWorkflowOperationHandler extends AbstractWorkflowOperationH
     Map<String, String> properties = new HashMap<>();
     logger.debug("Getting properties for {} {} {}", id, organizationId, seriesID);
     for (String key : operation.getConfigurationKeys()) {
-      String value = workflowInstance.getConfiguration(key);
+      String value = StringUtils.trimToEmpty(workflowInstance.getConfiguration(key));
       if (StringUtils.isBlank(value)) {
-        String defaultValue = operation.getConfiguration(key);
+        value = properties.get(key);
+      }
+      if (StringUtils.isBlank(value)) {
+        String defaultValue = StringUtils.trimToEmpty(operation.getConfiguration(key));
         properties.put(key, defaultValue);
         logger.debug("Configuration key '{}' of workflow {} is set to default value '{}' specified in workflow", key,
                 id, defaultValue);
