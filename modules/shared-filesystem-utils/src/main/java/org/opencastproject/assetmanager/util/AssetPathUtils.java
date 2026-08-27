@@ -92,12 +92,18 @@ public final class AssetPathUtils {
     }
 
     // Is the asset manager available locally?
-    if (assetManagerDir != null && new File(assetManagerDir).isDirectory()) {
-      logger.debug("Found local asset manager directory at {}", assetManagerDir);
-      return assetManagerDirs;
+    if (assetManagerDir == null) {
+      logger.warn("Local asset manager directory is not set. Directly reading files from asset manager is disabled.");
+      return null;
     }
 
-    return null;
+    if (new File(assetManagerDir).isDirectory()) {
+      logger.warn("Could not find local asset manager directory. Assuming it will be created later.");
+    } else {
+      logger.debug("Found local asset manager directory at {}", assetManagerDir);
+    }
+
+    return assetManagerDirs;
   }
 
   /**
